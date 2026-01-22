@@ -1,0 +1,124 @@
+{
+    "nav": {
+        "home": "Home",
+        "about": "About Us",
+        "portfolios": "Portfolios",
+        "freelancers": "Freelancers",
+        "blog": "Blog",
+        "contact": "Contact",
+        "participate": "Participate",
+        "tournaments": "Tournaments",
+        "resources": "Resources",
+        "news": "News",
+        "support": "Support"
+    },
+    "hero": {
+        "title": "Create Your",
+        "subtitle": "Marketing Team"
+    },
+    "whoWeAre": {
+        "title": "What <br /> is <br /> Team?",
+        "description1": "<0>Team</0> – is a unified force of ideas, talent and professionalism, uniting over 400 verified freelancers in various digital service directions.",
+        "description2": "We create personalized marketing teams for businesses – from professionals with skills and experience that exactly match your industry requirements and budget."
+    },
+    "slider": {
+        "title": "Choose Desired Service",
+        "webDesign": {
+            "title": "Web Design",
+            "desc": "Learn more about our Web Design services."
+        },
+        "development": {
+            "title": "Development",
+            "desc": "Learn more about our Development services."
+        },
+        "branding": {
+            "title": "Branding",
+            "desc": "Learn more about our Branding services."
+        },
+        "marketing": {
+            "title": "Marketing",
+            "desc": "Learn more about our Marketing services."
+        },
+        "seo": {
+            "title": "SEO Optimization",
+            "desc": "Learn more about our SEO Optimization services."
+        }
+    },
+    "servicesList": {
+        "list": "Social Media Management/ Graphic Design/ Branding/ Photo-Video/ Web Development/ Advertising/ ChatBot&CRM/ 3D Design/ Animation",
+        "cta": "See More"
+    },
+    "freelancerSelection": {
+        "title": "Choose <br/> Desired <br/> Freelancer",
+        "cta": "View Portfolios"
+    },
+    "about": {
+        "title": {
+            "your": "Your",
+            "team": "Team"
+        },
+        "subtitle": "For Digital Needs!",
+        "description": "Our platform unites over 400 verified freelancers in various digital service directions. This means your business can access a team of experienced professionals tailored exactly to your needs. Personalized marketing teams – we create team members considering your industry specifics, business needs, and budget. Flexibility and efficiency – our model gives you the opportunity to work with the best specialists for the required time, without extra costs and complexities. Strategy that brings results – we turn your visions into reality, develop brand awareness, and establish a successful digital strategy.",
+        "partners": "Partner Companies",
+        "stats": {
+            "title": "Statistics",
+            "completedProjects": "Completed Projects",
+            "globalPartners": "Global Partners",
+            "activeProjects": "Active Projects"
+        }
+    },
+    "freelancers": {
+        "hero": {
+            "title1": "Want to become",
+            "title2": "a member of Team?"
+        },
+        "intro": "Team connects over 400 verified freelancers across various digital fields. We help companies find the perfect professionals, while enabling freelancers to work on projects that perfectly match their skills and interests.",
+        "benefits": {
+            "title": "Why TEAM?",
+            "item1": "Freelance freedom with team stability – Work on a flexible schedule and on your own terms, while enjoying the support and stability of a team.",
+            "item2": "Streamlined client communication – We ensure an organized and comfortable workflow so you don't have to waste time on bureaucracy or complex negotiations.",
+            "item3": "Growth opportunities – Team gives you the chance to work with leading companies, expand your portfolio, and further develop your professional skills. If you are a designer, marketer, copywriter, programmer, or any other digital professional looking for interesting projects, fill out the application and become a member of Team."
+        },
+        "form": {
+            "title": "Fill out the application",
+            "name_surname": "Full Name",
+            "number": "Phone Number",
+            "email": "Email",
+            "portfolio": "Portfolio Link",
+            "upload": "Upload Portfolio",
+            "upload_btn": "Choose Files",
+            "message": "Tell us about yourself",
+            "send": "Submit"
+        }
+    },
+    "contact": {
+        "topTitle": "We Will Help You",
+        "topSubtitle": "In Creating Your Team!",
+        "scheduleBtn": "Schedule Meeting",
+        "mainTitle": "Contact Us",
+        "form": {
+            "name": "Name",
+            "surname": "Surname",
+            "email": "Email",
+            "message": "Message",
+            "send": "Send"
+        },
+        "info": {
+            "projects": "Next Projects",
+            "email": "Email",
+            "address": "Address",
+            "number": "Number"
+        },
+        "cta": {
+            "title": "We Will Help You <br/> Create Your Team",
+            "button": "Registration"
+        }
+    },
+    "footer": {
+        "description": "We create digital experiences that matter. From web development to graphic design, we turn your vision into reality.",
+        "navigation": "Navigation",
+        "contact": "Contact",
+        "address": "Tbilisi, Georgia",
+        "rights": "All rights reserved."
+    }
+}
