@@ -1,21 +1,20 @@
 import { Container } from "@/components/ui/Container";
 import { ProjectCategoryCard } from "@/components/portfolio/ProjectCategoryCard";
-import Navbar from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
+import { ProjectCard } from "@/components/portfolio/ProjectCard";
+import { projects } from "@/constants/portfolios";
 
 const categories = [
-    { id: 1, title: "Graphic Design", count: 12, slug: "graphic-design", color: "bg-blue-600" },
-    { id: 2, title: "Web Development", count: 8, slug: "web-development", color: "bg-purple-600" },
-    { id: 3, title: "UI/UX Design", count: 5, slug: "ui-ux", color: "bg-pink-600" },
-    { id: 4, title: "Branding", count: 10, slug: "branding", color: "bg-orange-600" },
-    { id: 5, title: "Motion Graphics", count: 4, slug: "motion", color: "bg-green-600" },
-    { id: 6, title: "Photography", count: 15, slug: "photography", color: "bg-red-600" },
+    { id: 1, title: "Social Media", count: 6, slug: "social-media", color: "bg-blue-600" },
+    { id: 2, title: "Web Development", count: 0, slug: "web-development", color: "bg-purple-600" },
+    { id: 3, title: "UI/UX Design", count: 0, slug: "ui-ux", color: "bg-pink-600" },
+    { id: 4, title: "Branding", count: 0, slug: "branding", color: "bg-orange-600" },
+    { id: 5, title: "SEO", count: 0, slug: "seo", color: "bg-green-600" },
+    { id: 6, title: "Graphic Design", count: 0, slug: "graphic-design", color: "bg-red-600" },
 ];
 
 export default function Portfolios() {
     return (
         <div className="min-h-screen bg-black text-white selection:bg-blue-500/30">
-            <Navbar />
             <main className="pt-32 pb-24">
                 <Container>
                     <div className="mb-16 text-center">
@@ -38,9 +37,17 @@ export default function Portfolios() {
                             />
                         ))}
                     </div>
+
+                    <div className="mt-32">
+                        <h2 className="text-3xl font-bold mb-12 text-center">Recent Projects</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                            {projects.slice(0, 3).map((project) => (
+                                <ProjectCard key={project.id} project={project} />
+                            ))}
+                        </div>
+                    </div>
                 </Container>
             </main>
-            <Footer />
         </div>
     );
 }

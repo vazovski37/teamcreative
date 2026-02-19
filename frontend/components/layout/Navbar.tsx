@@ -6,15 +6,14 @@ import { useLanguage } from '@/lib/language-context'
 import { useTranslation } from 'react-i18next'
 import { navRoutes } from '@/constants/navRoutes'
 import { cn } from '@/lib/utils'
-import { Globe, Mail, Menu, Languages, Home, Info, Users, Trophy, BookOpen, Newspaper, HelpCircle, Phone } from 'lucide-react'
+import { Globe, Mail, Menu, Languages, Home, Info, Users, Phone } from 'lucide-react'
 import { motion } from 'framer-motion'
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import {
     Select,
     SelectTrigger,
     SelectContent,
     SelectItem,
-    SelectValue,
 } from '@/components/ui/select'
 import {
     Sheet,
@@ -27,11 +26,11 @@ import {
 import { Button } from '@/components/ui/button'
 
 // Simplified navigation items - showing key ones in the pill
-// Simplified navigation items - showing key ones in the pill
 const mainNavItems = [
     { key: 'nav.home', href: navRoutes.home },
     { key: 'nav.about', href: navRoutes.about },
     { key: 'nav.freelancers', href: navRoutes.freelancers },
+    { key: 'nav.portfolios', href: navRoutes.portfolios },
     { key: 'nav.contact', href: navRoutes.contact },
 ]
 
@@ -50,21 +49,56 @@ export default function Navbar() {
     const { t } = useTranslation() // uses default 'translation' namespace
     const [isMounted, setIsMounted] = useState(false)
 
+    // Manual Animation State
+    const [activeStyle, setActiveStyle] = useState({ left: 0, width: 0, opacity: 0 })
+    const navRefs = useRef<(HTMLAnchorElement | null)[]>([])
+
     useEffect(() => {
         setIsMounted(true)
     }, [])
 
+    // Update active pill position
+    useEffect(() => {
+        if (!isMounted) return;
+
+        const measureActiveItem = () => {
+            const activeIndex = mainNavItems.findIndex(item =>
+                item.href === '/' ? pathname === '/' : pathname?.startsWith(item.href)
+            )
+
+            if (activeIndex !== -1 && navRefs.current[activeIndex]) {
+                const el = navRefs.current[activeIndex]
+                if (el) {
+                    setActiveStyle({
+                        left: el.offsetLeft,
+                        width: el.offsetWidth,
+                        opacity: 1
+                    })
+                }
+            } else {
+                setActiveStyle(prev => ({ ...prev, opacity: 0 }))
+            }
+        }
+
+        measureActiveItem()
+
+        // Add resize listener to update position on window resize
+        window.addEventListener('resize', measureActiveItem)
+        return () => window.removeEventListener('resize', measureActiveItem)
+
+    }, [pathname, isMounted, t]) // t dependency added in case translation length changes width
+
     return (
-        <header className="fixed top-4 left-1/2 -translate-x-1/2 z-50 w-full px-4">
+        <header className="fixed top-4 left-0 right-0 z-50 w-full px-4 flex justify-center pointer-events-none">
             {/* Centered Pill-Shaped Navbar */}
             <motion.nav
                 initial={{ opacity: 0 }}
                 animate={{ opacity: isMounted ? 1 : 0 }}
                 transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                className="mx-auto max-w-7xl w-full bg-card/50 backdrop-blur-md rounded-full px-2 py-2 shadow-xl border border-border/50 flex items-center justify-between"
+                className="mx-auto max-w-7xl relative bg-card/50 backdrop-blur-md rounded-full px-2 py-2 shadow-xl border border-border/50 flex items-center justify-between pointer-events-auto"
             >
                 {/* Left: Circular Logo Button */}
-                <div className="flex-shrink-0">
+                <div className="flex-shrink-0 relative z-10">
                     <Link
                         href="/"
                         className="flex items-center justify-center h-10 px-6 rounded-full bg-foreground border border-border hover:bg-foreground/90 transition-colors flex-shrink-0"
@@ -74,48 +108,50 @@ export default function Navbar() {
                 </div>
 
                 {/* Center: Navigation Links */}
-                <div className="hidden md:flex items-center gap-1 lg:gap-2 flex-1 justify-center">
-                    {mainNavItems.map((item) => {
-                        const isActive = pathname === item.href
+                <div className="hidden md:flex items-center gap-1 lg:gap-2 flex-1 justify-center relative">
+
+                    {/* Active Background Pill (Absolute) */}
+                    <motion.div
+                        className="absolute top-0 bottom-0 bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 rounded-full -z-10"
+                        animate={{
+                            left: activeStyle.left,
+                            width: activeStyle.width,
+                            opacity: activeStyle.opacity
+                        }}
+                        transition={{
+                            type: "spring",
+                            stiffness: 300,
+                            damping: 30
+                        }}
+                    >
+                        {/* Glow Effect */}
+                        <div className="absolute inset-0 bg-primary/40 blur-md -z-20 rounded-full" />
+                        {/* Bottom Bar */}
+                        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full" />
+                    </motion.div>
+
+                    {mainNavItems.map((item, index) => {
+                        const isActive = item.href === '/' ? pathname === '/' : pathname?.startsWith(item.href)
                         return (
                             <Link
                                 key={item.href}
                                 href={item.href}
+                                ref={el => { navRefs.current[index] = el }}
                                 className={cn(
-                                    'relative px-3 lg:px-4 py-2 rounded-full text-[10px] uppercase tracking-widest font-bold transition-all duration-300 whitespace-nowrap font-[family-name:var(--font-ms-block)]',
+                                    'relative px-3 lg:px-4 py-2 rounded-full text-[10px] uppercase tracking-widest font-bold transition-colors duration-300 whitespace-nowrap font-[family-name:var(--font-ms-block)]',
                                     isActive
                                         ? 'text-foreground'
                                         : 'text-muted-foreground hover:text-foreground'
                                 )}
                             >
                                 <span className="relative z-10">{t(item.key)}</span>
-                                {isActive && (
-                                    <>
-                                        <motion.div
-                                            layoutId="navbar-active-bg"
-                                            className="absolute inset-0 rounded-full bg-gradient-to-r from-primary/20 via-primary/30 to-primary/20 -z-10"
-                                            transition={{ type: "spring", stiffness: 280, damping: 32, mass: 0.9 }}
-                                        />
-                                        <motion.div
-                                            layoutId="navbar-active-glow"
-                                            className="absolute inset-0 rounded-full bg-primary/40 blur-md -z-20"
-                                            transition={{ type: "spring", stiffness: 280, damping: 32, mass: 0.9 }}
-                                        />
-                                        <motion.div
-                                            initial={{ scale: 0.9, opacity: 0 }}
-                                            animate={{ scale: 1, opacity: 1 }}
-                                            transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                                            className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-0.5 bg-primary rounded-full"
-                                        />
-                                    </>
-                                )}
                             </Link>
                         )
                     })}
                 </div>
 
                 {/* Right: Email/Contact & Language Selector */}
-                <div className="flex items-center gap-2 flex-shrink-0">
+                <div className="flex items-center gap-2 flex-shrink-0 relative z-10">
                     {/* Email/Contact Pill - Desktop */}
                     <div className="hidden md:flex items-center flex-shrink-0">
                         <Link
@@ -218,7 +254,7 @@ export default function Navbar() {
                                 <nav className="flex-1 overflow-y-auto px-3 py-4">
                                     <div className="flex flex-col gap-1">
                                         {allNavItems.map((item, index) => {
-                                            const isActive = pathname === item.href
+                                            const isActive = item.href === '/' ? pathname === '/' : pathname?.startsWith(item.href)
                                             const Icon = item.icon
                                             return (
                                                 <motion.div
@@ -235,14 +271,14 @@ export default function Navbar() {
                                                         <Link
                                                             href={item.href}
                                                             className={cn(
-                                                                'relative group flex items-center gap-3 px-4 py-3 rounded-xl text-[10px] uppercase tracking-widest font-bold transition-all duration-200 font-[family-name:var(--font-ms-block)]',
+                                                                'relative group flex items-center gap-3 px-4 py-3 rounded-xl text-[10px] uppercase tracking-widest font-bold transition-colors duration-200 font-[family-name:var(--font-ms-block)]',
                                                                 isActive
                                                                     ? 'text-primary'
                                                                     : 'text-muted-foreground hover:text-foreground hover:bg-accent/50'
                                                             )}
                                                         >
                                                             <div className={cn(
-                                                                'flex items-center justify-center w-10 h-10 rounded-lg transition-all duration-200',
+                                                                'flex items-center justify-center w-10 h-10 rounded-lg transition-colors duration-200',
                                                                 isActive
                                                                     ? 'bg-primary/10 text-primary'
                                                                     : 'bg-muted/50 text-muted-foreground group-hover:bg-primary/5 group-hover:text-primary'
@@ -298,4 +334,3 @@ export default function Navbar() {
         </header>
     )
 }
-

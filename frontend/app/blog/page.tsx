@@ -1,8 +1,6 @@
 "use client";
 
 import { Container } from "@/components/ui/Container";
-import Navbar from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
 
 export default function Blog() {
     return (
@@ -19,7 +17,6 @@ export default function Blog() {
                     </div>
                 </Container>
             </main>
-            <Footer />
         </div>
     );
 }
