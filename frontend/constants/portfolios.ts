@@ -1,7 +1,7 @@
 import { LocalizedText } from "@/lib/content-helpers";
 
 export type ContentBlock =
-    | { type: 'hero'; media: string; mediaType: 'video' | 'image'; title?: string | LocalizedText; subtitle?: string | LocalizedText; align?: 'left' | 'center' }
+    | { type: 'hero'; media?: string; mediaType?: 'video' | 'image'; title?: string | LocalizedText; subtitle?: string | LocalizedText; badge?: string | LocalizedText; align?: 'left' | 'center' }
     | { type: 'text-highlight'; text: string | LocalizedText; label?: string | LocalizedText; align?: 'left' | 'center' }
     | { type: 'info-card'; media: string; mediaType: 'video' | 'image'; title?: string | LocalizedText; details?: { label: string | LocalizedText; value: string | LocalizedText }[]; theme?: 'paper' | 'dark' | 'glass'; align?: 'left' | 'right' }
     | { type: 'reel-grid'; mobileLayout?: 'swipe' | 'column'; items: { media: string; mediaType: 'video' | 'image'; caption?: string | LocalizedText }[] }
@@ -47,6 +47,7 @@ export const projects: Project[] = [
                 media: "/images/saxenosno/sacxenosno1.png",
                 mediaType: 'image',
                 title: { en: "The Showcase", ge: "ჩვენება" },
+                badge: { en: "Component Library", ge: "კომპონენტების ბიბლიოთეკა" },
                 subtitle: { en: "All Components", ge: "ყველა კომპონენტი" }
             },
             {
@@ -200,9 +201,13 @@ export const projects: Project[] = [
                     en: "Discover the Wild",
                     ge: "აღმოაჩინე ველური ბუნება"
                 },
+                badge: {
+                    en: "Horse Riding Tourism",
+                    ge: "საცხენოსნო ტურიზმი"
+                },
                 subtitle: {
-                    en: "Horse Riding Tourism / Strategy",
-                    ge: "საცხენოსნო ტურიზმი / სტრატეგია"
+                    en: "Strategy",
+                    ge: "სტრატეგია"
                 }
             },
             {

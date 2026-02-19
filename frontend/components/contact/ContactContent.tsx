@@ -35,7 +35,10 @@ export function ContactContent() {
                 </div>
 
                 {/* Main Content Card */}
-                <div className="w-full max-w-6xl bg-[#111111] rounded-[30px] p-6 md:p-12 shadow-2xl border border-white/5">
+                <div className="w-full max-w-6xl bg-gradient-to-br from-white/5 to-transparent rounded-[3rem] p-6 md:p-12 shadow-2xl border border-white/10 relative overflow-hidden backdrop-blur-sm">
+                    {/* Ambient Glows */}
+                    <div className="absolute top-0 right-0 w-96 h-96 bg-primary/20 rounded-full blur-[120px] -mr-32 -mt-32 pointer-events-none opacity-60"></div>
+                    <div className="absolute bottom-0 left-0 w-96 h-96 bg-blue-500/10 rounded-full blur-[120px] -ml-32 -mb-32 pointer-events-none opacity-40"></div>
                     <div className="grid lg:grid-cols-2 gap-8 md:gap-12">
 
                         {/* Form Side */}

@@ -1,9 +1,9 @@
 import { HeroSection } from "@/components/home/HeroSection";
 import { WhoWeAreSection } from "@/components/home/WhoWeAreSection";
 import { Slider3D } from "@/components/home/Slider3D";
-import { ContactSection } from "@/components/home/ContactSection";
 import { ServicesList } from "@/components/home/ServicesList";
 import { FreelancerSelectionSection } from "@/components/home/FreelancerSelectionSection";
+import { ContactContent } from "@/components/contact/ContactContent";
 
 export default function Home() {
   return (
@@ -13,7 +13,7 @@ export default function Home() {
       <ServicesList />
       <WhoWeAreSection />
       <FreelancerSelectionSection />
-      <ContactSection />
+      <ContactContent />
     </div>
   );
 }
