@@ -3,29 +3,35 @@
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { useRef, useEffect } from "react";
+import { useLightbox } from "@/lib/lightbox-context";
 
 interface MediaDisplayProps {
     src: string;
     type: 'video' | 'image';
     alt?: string;
+    caption?: string;
     className?: string;
     loop?: boolean;
     autoPlay?: boolean;
     muted?: boolean;
     controls?: boolean;
+    enableLightbox?: boolean;
 }
 
 export function MediaDisplay({
     src,
     type,
     alt = "Portfolio media",
+    caption,
     className,
     loop = true,
     autoPlay = true,
     muted = true,
-    controls = false
+    controls = false,
+    enableLightbox = true
 }: MediaDisplayProps) {
     const videoRef = useRef<HTMLVideoElement>(null);
+    const { openLightbox } = useLightbox();
 
     useEffect(() => {
         if (type === 'video' && videoRef.current && autoPlay) {
@@ -33,9 +39,19 @@ export function MediaDisplay({
         }
     }, [src, type, autoPlay]);
 
+    const handleClick = (e: React.MouseEvent) => {
+        if (!enableLightbox) return;
+        e.preventDefault();
+        e.stopPropagation();
+        openLightbox({ src, type, caption: caption || alt });
+    };
+
     if (type === 'video') {
         return (
-            <div className={cn("relative overflow-hidden w-full h-full", className)}>
+            <div
+                className={cn("relative overflow-hidden w-full h-full", enableLightbox && "cursor-pointer", className)}
+                onClick={handleClick}
+            >
                 <video
                     ref={videoRef}
                     src={src}
@@ -51,7 +67,10 @@ export function MediaDisplay({
     }
 
     return (
-        <div className={cn("relative overflow-hidden w-full h-full", className)}>
+        <div
+            className={cn("relative overflow-hidden w-full h-full", enableLightbox && "cursor-pointer", className)}
+            onClick={handleClick}
+        >
             <Image
                 src={src}
                 alt={alt}

@@ -4,7 +4,7 @@ export type ContentBlock =
     | { type: 'hero'; media: string; mediaType: 'video' | 'image'; title?: string | LocalizedText; subtitle?: string | LocalizedText; align?: 'left' | 'center' }
     | { type: 'text-highlight'; text: string | LocalizedText; label?: string | LocalizedText; align?: 'left' | 'center' }
     | { type: 'info-card'; media: string; mediaType: 'video' | 'image'; title?: string | LocalizedText; details?: { label: string | LocalizedText; value: string | LocalizedText }[]; theme?: 'paper' | 'dark' | 'glass'; align?: 'left' | 'right' }
-    | { type: 'reel-grid'; items: { media: string; mediaType: 'video' | 'image'; caption?: string | LocalizedText }[] }
+    | { type: 'reel-grid'; mobileLayout?: 'swipe' | 'column'; items: { media: string; mediaType: 'video' | 'image'; caption?: string | LocalizedText }[] }
     | { type: 'media-grid'; items: { media: string; mediaType: 'video' | 'image'; size?: 'sq' | 'wide' }[] }
     | { type: 'vertical-showcase'; media: string; mediaType: 'video' | 'image'; overlayText?: string | LocalizedText; title?: string | LocalizedText }
     | { type: 'results'; title: string | LocalizedText; description: string | LocalizedText; stats: { label: string | LocalizedText; value: string | LocalizedText }[] }
@@ -89,6 +89,7 @@ export const projects: Project[] = [
             },
             {
                 type: 'reel-grid',
+                mobileLayout: 'swipe',
                 items: [
                     { media: "/images/saxenosno/sacxenosno3.png", mediaType: 'image', caption: { en: "Reel 1", ge: "რილ 1" } },
                     { media: "/images/saxenosno/sacxenosno4.png", mediaType: 'image', caption: { en: "Reel 2", ge: "რილ 2" } },

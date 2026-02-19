@@ -31,7 +31,13 @@ export function InfoCardBlock({
         <section className="relative w-full py-12 md:py-24 overflow-hidden">
             <div className="container mx-auto px-4 relative max-w-7xl">
                 <div className="relative aspect-[16/9] md:aspect-[21/9] rounded-3xl overflow-hidden shadow-2xl border border-white/10">
-                    <MediaDisplay src={media} type={mediaType} className="w-full h-full" />
+                    <MediaDisplay
+                        src={media}
+                        type={mediaType}
+                        className="w-full h-full"
+                        caption={localizedTitle}
+                        alt={localizedTitle || "Info Card Media"}
+                    />
 
                     {/* Overlay Card */}
                     <motion.div

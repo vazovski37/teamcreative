@@ -27,7 +27,13 @@ export function VerticalShowcaseBlock({ media, mediaType, overlayText, title }: 
                     transition={{ duration: 0.8 }}
                     className="relative w-full max-w-md md:max-w-lg aspect-[9/16] rounded-2xl overflow-hidden shadow-2xl border border-white/10"
                 >
-                    <MediaDisplay src={media} type={mediaType} className="w-full h-full" />
+                    <MediaDisplay
+                        src={media}
+                        type={mediaType}
+                        className="w-full h-full"
+                        caption={localizedTitle}
+                        alt={localizedTitle || "Showcase Media"}
+                    />
 
                     {/* Overlay Gradient & Text */}
                     <div className="absolute inset-x-0 bottom-0 top-1/2 bg-gradient-to-t from-black/90 via-black/40 to-transparent" />

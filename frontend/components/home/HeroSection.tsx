@@ -26,23 +26,20 @@ export function HeroSection() {
                 <div className="absolute inset-0 bg-black/30" />
             </div>
 
-            <Container className="relative z-10 flex flex-col items-center text-center">
-                <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 1, ease: "easeOut" }}
-                    className="flex flex-col items-center gap-6"
-                >
-                    <div className="flex flex-col items-center">
-                        <h1 className="text-[28px] md:text-[45px] font-medium tracking-widest text-white uppercase font-[family-name:var(--font-ms-block)] leading-[1.4] md:leading-[71px]">
-                            {t('hero.title')}
-                        </h1>
-                        <h1 className="text-[28px] md:text-[45px] font-medium tracking-widest text-white uppercase font-[family-name:var(--font-ms-block)] leading-[1.4] md:leading-[71px]">
-                            {t('hero.subtitle')}
-                        </h1>
-                    </div>
+            <Container className="relative z-10 flex items-center justify-center h-full">
 
-                </motion.div>
+                <div className="flex flex-col gap-2 z-10 w-full items-center">
+                    <h2 className="text-[32px] md:text-[56px] font-medium font-[family-name:var(--font-ms-block)] text-white uppercase leading-tight md:leading-[1.1] tracking-tight">
+                        {t('hero.title')}
+                    </h2>
+                    <h2 className="text-[32px] md:text-[56px] font-medium font-[family-name:var(--font-ms-block)] text-white uppercase leading-tight md:leading-[1.1] tracking-tight">
+                        {t('hero.title2')}
+                    </h2>
+                    <h1 className="text-[64px] md:text-[120px] font-medium font-[family-name:var(--font-ms-block)] text-white uppercase leading-none md:leading-[0.9] tracking-tight mt-2 md:mt-4">
+                        {t('hero.subtitle')}
+                    </h1>
+                </div>
+
             </Container>
         </section>
     );

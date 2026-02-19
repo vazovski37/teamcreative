@@ -25,6 +25,8 @@ import Navbar from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
 import { ThemeProvider } from "@/components/layout/theme-provider";
 import { LanguageProvider } from "@/lib/language-context";
+import { LightboxProvider } from "@/lib/lightbox-context";
+import { Lightbox } from "@/components/ui/Lightbox";
 
 export default function RootLayout({
   children,
@@ -44,13 +46,16 @@ export default function RootLayout({
           disableTransitionOnChange
         >
           <LanguageProvider>
-            <div className="flex flex-col min-h-screen">
-              <Navbar />
-              <main className="flex-grow">
-                {children}
-              </main>
-              <Footer />
-            </div>
+            <LightboxProvider>
+              <div className="flex flex-col min-h-screen">
+                <Navbar />
+                <main className="flex-grow">
+                  {children}
+                </main>
+                <Footer />
+                <Lightbox />
+              </div>
+            </LightboxProvider>
           </LanguageProvider>
         </ThemeProvider>
       </body>

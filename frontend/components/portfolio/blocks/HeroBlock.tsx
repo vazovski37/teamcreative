@@ -27,6 +27,8 @@ export function HeroBlock({ media, mediaType, title, subtitle, align = 'center' 
                     src={media}
                     type={mediaType}
                     className="opacity-70"
+                    caption={localizedTitle}
+                    alt={localizedTitle || "Hero Media"}
                 />
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
             </div>
