@@ -1,7 +1,23 @@
+import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { ProjectCategoryCard } from "@/components/portfolio/ProjectCategoryCard";
 import { ProjectCard } from "@/components/portfolio/ProjectCard";
 import { projects } from "@/constants/portfolios";
+
+export const metadata: Metadata = {
+    title: "Portfolio | TeamCreative",
+    description: "Explore our creative portfolio — social media, web development, UI/UX design, branding, SEO, and graphic design projects by TeamCreative.",
+    openGraph: {
+        title: "Portfolio | TeamCreative",
+        description: "Explore our creative portfolio — social media, web development, UI/UX design, branding, SEO, and graphic design projects by TeamCreative.",
+        type: "website",
+    },
+    twitter: {
+        card: "summary",
+        title: "Portfolio | TeamCreative",
+        description: "Explore our creative portfolio by TeamCreative.",
+    },
+};
 
 const categories = [
     { id: 1, title: "Social Media", count: 6, slug: "social-media", color: "bg-blue-600" },

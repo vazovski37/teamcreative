@@ -29,6 +29,12 @@ export interface Project {
     images?: string[];
     coverImage?: string;
     content?: ContentBlock[]; // New flexible content array
+    meta?: {
+        metaTitle?: string;
+        metaDescription?: string;
+        ogImage?: string;
+        keywords?: string;
+    };
 }
 
 export const projects: Project[] = [

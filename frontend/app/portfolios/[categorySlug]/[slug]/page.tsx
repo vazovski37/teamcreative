@@ -1,5 +1,6 @@
+import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
-import { getProject } from "@/constants/portfolios";
+import { getProject, projects } from "@/constants/portfolios";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { HeroBlock } from "@/components/portfolio/blocks/HeroBlock";
@@ -11,6 +12,49 @@ import { VerticalShowcaseBlock } from "@/components/portfolio/blocks/VerticalSho
 import { ResultsBlock } from "@/components/portfolio/blocks/ResultsBlock";
 import { LegacyColumnsBlock } from "@/components/portfolio/blocks/LegacyColumnsBlock";
 import { ResultsCTA } from "@/components/portfolio/ResultsCTA";
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const { categorySlug, slug } = await params;
+    const project = getProject(categorySlug, slug);
+
+    if (!project) {
+        return { title: "Project Not Found | TeamCreative" };
+    }
+
+    const meta = project.meta;
+    const title = meta?.metaTitle || `${project.title} – ${project.client} | TeamCreative`;
+    const description = meta?.metaDescription || project.description || `${project.category} project for ${project.client} by TeamCreative.`;
+    const ogImage = meta?.ogImage || project.coverImage;
+    const keywordsStr = meta?.keywords;
+
+    return {
+        title,
+        description,
+        ...(keywordsStr && { keywords: keywordsStr.split(',').map(k => k.trim()) }),
+        openGraph: {
+            title,
+            description,
+            type: "article",
+            ...(ogImage && {
+                images: [{ url: ogImage, alt: project.title }],
+            }),
+        },
+        twitter: {
+            card: ogImage ? "summary_large_image" : "summary",
+            title,
+            description,
+            ...(ogImage && { images: [ogImage] }),
+        },
+    };
+}
+
+export async function generateStaticParams() {
+    return projects.map((p) => ({
+        categorySlug: p.categorySlug,
+        slug: p.slug,
+    }));
+}
+
 
 interface PageProps {
     params: Promise<{

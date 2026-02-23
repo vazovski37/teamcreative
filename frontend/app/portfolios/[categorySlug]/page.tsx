@@ -1,9 +1,40 @@
 
+import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { getProjectsByCategory, projects } from "@/constants/portfolios";
 
 import { ProjectCard } from "@/components/portfolio/ProjectCard";
 import { notFound } from "next/navigation";
+
+const CATEGORY_NAMES: Record<string, string> = {
+    'social-media': 'Social Media',
+    'web-development': 'Web Development',
+    'ui-ux': 'UI/UX Design',
+    'branding': 'Branding',
+    'seo': 'SEO',
+    'graphic-design': 'Graphic Design',
+    'showcase': 'Portfolio',
+};
+
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const { categorySlug } = await params;
+    const categoryName = CATEGORY_NAMES[categorySlug] || categorySlug;
+    const title = `${categoryName} Projects | TeamCreative`;
+    const description = `Explore our ${categoryName.toLowerCase()} projects — creative work tailored to deliver results by TeamCreative.`;
+
+    return {
+        title,
+        description,
+        openGraph: { title, description, type: "website" },
+        twitter: { card: "summary", title, description },
+    };
+}
+
+export async function generateStaticParams() {
+    const slugs = [...new Set(projects.map((p) => p.categorySlug))];
+    return slugs.map((categorySlug) => ({ categorySlug }));
+}
+
 
 interface PageProps {
     params: Promise<{

@@ -66,18 +66,29 @@ export function MediaDisplay({
         );
     }
 
+    // Use native img for blob/data URLs since next/image doesn't support them
+    const isBlobOrData = src.startsWith('blob:') || src.startsWith('data:');
+
     return (
         <div
             className={cn("relative overflow-hidden w-full h-full", enableLightbox && "cursor-pointer", className)}
             onClick={handleClick}
         >
-            <Image
-                src={src}
-                alt={alt}
-                fill
-                className="object-cover"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            />
+            {isBlobOrData ? (
+                <img
+                    src={src}
+                    alt={alt}
+                    className="absolute inset-0 w-full h-full object-cover"
+                />
+            ) : (
+                <Image
+                    src={src}
+                    alt={alt}
+                    fill
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                />
+            )}
         </div>
     );
 }
