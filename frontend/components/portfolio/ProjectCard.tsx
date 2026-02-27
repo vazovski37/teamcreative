@@ -11,9 +11,9 @@ export function ProjectCard({ project }: { project: Project }) {
             <div className="relative rounded-[2rem] bg-[#111] p-3 border border-white/5 shadow-2xl transition-all duration-300 hover:scale-[1.02] hover:shadow-blue-500/20 group-hover:border-blue-500/30">
                 {/* Image Container - Vertical Aspect Ratio to mimic Social Media Posts */}
                 <div className="aspect-[4/5] relative w-full overflow-hidden rounded-[1.5rem]">
-                    {project.images && project.images[0] ? (
+                    {project.coverImage || (project.images && project.images[0]) ? (
                         <Image
-                            src={project.images[0]}
+                            src={project.coverImage || (project.images ? project.images[0] : '')}
                             alt={project.title}
                             fill
                             className="object-cover transition-transform duration-700 group-hover:scale-110"
