@@ -1,7 +1,7 @@
 import { revalidateTag, revalidatePath } from 'next/cache';
 import { NextRequest, NextResponse } from 'next/server';
 
-export async function POST(request: NextRequest) {
+export async function GET(request: NextRequest) {
     // You should probably add a secret token check here if this routes gets public.
     const path = request.nextUrl.searchParams.get('path');
     if (path) {
