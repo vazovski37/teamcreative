@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
 import { ProjectCategoryCard } from "@/components/portfolio/ProjectCategoryCard";
 import { ProjectCard } from "@/components/portfolio/ProjectCard";
-import { projects } from "@/constants/portfolios";
+import { supabase } from "@/lib/supabase";
+import { Project } from "@/constants/portfolios";
 
 export const metadata: Metadata = {
     title: "Portfolio | TeamCreative",
@@ -19,16 +20,44 @@ export const metadata: Metadata = {
     },
 };
 
-const categories = [
-    { id: 1, title: "Social Media", count: 6, slug: "social-media", color: "bg-blue-600" },
-    { id: 2, title: "Web Development", count: 0, slug: "web-development", color: "bg-purple-600" },
-    { id: 3, title: "UI/UX Design", count: 0, slug: "ui-ux", color: "bg-pink-600" },
-    { id: 4, title: "Branding", count: 0, slug: "branding", color: "bg-orange-600" },
-    { id: 5, title: "SEO", count: 0, slug: "seo", color: "bg-green-600" },
-    { id: 6, title: "Graphic Design", count: 0, slug: "graphic-design", color: "bg-red-600" },
-];
+export const revalidate = 3600;
 
-export default function Portfolios() {
+const CATEGORY_COLORS: Record<string, string> = {
+    "social-media": "bg-blue-600",
+    "web-development": "bg-purple-600",
+    "ui-ux": "bg-pink-600",
+    "branding": "bg-orange-600",
+    "seo": "bg-green-600",
+    "graphic-design": "bg-red-600",
+};
+
+export default async function Portfolios() {
+    const { data: projectsData, error } = await supabase
+        .from('projects')
+        .select('*');
+
+    const projects: Project[] = (projectsData || []) as Project[];
+
+    const categoryMap = new Map<string, { id: number; title: string; count: number; slug: string; color: string }>();
+    let idCounter = 1;
+
+    projects.forEach(p => {
+        if (!categoryMap.has(p.categorySlug)) {
+            categoryMap.set(p.categorySlug, {
+                id: idCounter++,
+                title: p.category || p.categorySlug,
+                count: 1,
+                slug: p.categorySlug,
+                color: CATEGORY_COLORS[p.categorySlug] || "bg-gray-600"
+            });
+        } else {
+            const cat = categoryMap.get(p.categorySlug)!;
+            cat.count += 1;
+        }
+    });
+
+    const categories = Array.from(categoryMap.values());
+
     return (
         <div className="min-h-screen bg-black text-white selection:bg-blue-500/30">
             <main className="pt-32 pb-24">

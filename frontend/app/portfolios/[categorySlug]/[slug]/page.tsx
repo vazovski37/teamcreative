@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
-import { getProject, projects } from "@/constants/portfolios";
+import { Project } from "@/constants/portfolios";
+import { supabase } from "@/lib/supabase";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { HeroBlock } from "@/components/portfolio/blocks/HeroBlock";
@@ -11,11 +12,29 @@ import { MediaGridBlock } from "@/components/portfolio/blocks/MediaGridBlock";
 import { VerticalShowcaseBlock } from "@/components/portfolio/blocks/VerticalShowcaseBlock";
 import { ResultsBlock } from "@/components/portfolio/blocks/ResultsBlock";
 import { LegacyColumnsBlock } from "@/components/portfolio/blocks/LegacyColumnsBlock";
+import { BentoGridBlock } from "@/components/portfolio/blocks/BentoGridBlock";
 import { ResultsCTA } from "@/components/portfolio/ResultsCTA";
+
+export const revalidate = 3600;
+
+interface PageProps {
+    params: Promise<{
+        categorySlug: string;
+        slug: string;
+    }>;
+}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { categorySlug, slug } = await params;
-    const project = getProject(categorySlug, slug);
+
+    const { data } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('categorySlug', categorySlug)
+        .eq('slug', slug)
+        .single();
+
+    const project = data as Project | null;
 
     if (!project) {
         return { title: "Project Not Found | TeamCreative" };
@@ -49,23 +68,25 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export async function generateStaticParams() {
-    return projects.map((p) => ({
+    const { data: projectsData } = await supabase.from('projects').select('categorySlug, slug');
+    const projects = projectsData || [];
+    return projects.map((p: any) => ({
         categorySlug: p.categorySlug,
         slug: p.slug,
     }));
 }
 
-
-interface PageProps {
-    params: Promise<{
-        categorySlug: string;
-        slug: string;
-    }>;
-}
-
 export default async function ProjectPage({ params }: PageProps) {
     const { categorySlug, slug } = await params;
-    const project = getProject(categorySlug, slug);
+
+    const { data } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('categorySlug', categorySlug)
+        .eq('slug', slug)
+        .single();
+
+    const project = data as Project | null;
 
     if (!project) {
         notFound();
@@ -91,6 +112,8 @@ export default async function ProjectPage({ params }: PageProps) {
                             return <MediaGridBlock key={idx} {...block} />;
                         case 'vertical-showcase':
                             return <VerticalShowcaseBlock key={idx} {...block} />;
+                        case 'bento-grid':
+                            return <BentoGridBlock key={idx} {...block} />;
                         case 'results':
                             return <ResultsBlock key={idx} {...block} />;
                         default:
@@ -116,13 +139,11 @@ export default async function ProjectPage({ params }: PageProps) {
                 {/* Background Media */}
                 <div className="absolute inset-0 z-0">
                     {project.coverImage ? (
-                        <Image
-                            src={project.coverImage}
-                            alt={project.title}
-                            fill
-                            className="object-cover opacity-60"
-                            priority
-                        />
+                        project.coverImage.startsWith('blob:') || project.coverImage.startsWith('data:') || project.coverImage.startsWith('/uploads/') ? (
+                            <img src={project.coverImage} alt={project.title} className="absolute inset-0 w-full h-full object-cover opacity-60" />
+                        ) : (
+                            <Image src={project.coverImage} alt={project.title} fill className="object-cover opacity-60" priority />
+                        )
                     ) : (
                         <div className="w-full h-full bg-neutral-900" />
                     )}
@@ -190,19 +211,21 @@ export default async function ProjectPage({ params }: PageProps) {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-                            {storyImages.map((img, idx) => (
-                                <div key={idx} className="group relative aspect-[9/16] rounded-2xl overflow-hidden bg-white/5 border border-white/10 shadow-2xl skew-y-0 hover:-skew-y-1 transition-all duration-500">
-                                    <Image
-                                        src={img}
-                                        alt={`Story ${idx + 1}`}
-                                        fill
-                                        className="object-cover transition-transform duration-700 group-hover:scale-110"
-                                    />
-                                    <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black/80 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-300">
-                                        <span className="text-xs font-bold uppercase tracking-wider text-blue-400">Highlight 0{idx + 1}</span>
+                            {storyImages.map((img, idx) => {
+                                const isLocal = img.startsWith('blob:') || img.startsWith('data:') || img.startsWith('/uploads/');
+                                return (
+                                    <div key={idx} className="group relative aspect-[9/16] rounded-2xl overflow-hidden bg-white/5 border border-white/10 shadow-2xl skew-y-0 hover:-skew-y-1 transition-all duration-500">
+                                        {isLocal ? (
+                                            <img src={img} alt={`Story ${idx + 1}`} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                                        ) : (
+                                            <Image src={img} alt={`Story ${idx + 1}`} fill className="object-cover transition-transform duration-700 group-hover:scale-110" />
+                                        )}
+                                        <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black/80 to-transparent translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                                            <span className="text-xs font-bold uppercase tracking-wider text-blue-400">Highlight 0{idx + 1}</span>
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                );
+                            })}
                         </div>
                     </div>
                 )}
@@ -217,16 +240,18 @@ export default async function ProjectPage({ params }: PageProps) {
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                            {galleryImages.map((img, idx) => (
-                                <div key={idx} className="relative aspect-video rounded-xl overflow-hidden bg-white/5 border border-white/10 hover:border-white/30 transition-colors">
-                                    <Image
-                                        src={img}
-                                        alt={`Gallery ${idx + 1}`}
-                                        fill
-                                        className="object-cover hover:scale-105 transition-transform duration-700"
-                                    />
-                                </div>
-                            ))}
+                            {galleryImages.map((img, idx) => {
+                                const isLocal = img.startsWith('blob:') || img.startsWith('data:') || img.startsWith('/uploads/');
+                                return (
+                                    <div key={idx} className="relative aspect-video rounded-xl overflow-hidden bg-white/5 border border-white/10 hover:border-white/30 transition-colors">
+                                        {isLocal ? (
+                                            <img src={img} alt={`Gallery ${idx + 1}`} className="absolute inset-0 w-full h-full object-cover hover:scale-105 transition-transform duration-700" />
+                                        ) : (
+                                            <Image src={img} alt={`Gallery ${idx + 1}`} fill className="object-cover hover:scale-105 transition-transform duration-700" />
+                                        )}
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 )}
@@ -259,12 +284,11 @@ export default async function ProjectPage({ params }: PageProps) {
                         {/* Creative Visual/Luggage Concept */}
                         <div className="relative aspect-square md:aspect-[4/5] rounded-2xl overflow-hidden border border-white/10 bg-black/50">
                             {project.images && project.images[1] ? (
-                                <Image
-                                    src={project.images[1]}
-                                    alt="Result Visual"
-                                    fill
-                                    className="object-cover opacity-80 mix-blend-lighten"
-                                />
+                                project.images[1].startsWith('blob:') || project.images[1].startsWith('data:') || project.images[1].startsWith('/uploads/') ? (
+                                    <img src={project.images[1]} alt="Result Visual" className="absolute inset-0 w-full h-full object-cover opacity-80 mix-blend-lighten" />
+                                ) : (
+                                    <Image src={project.images[1]} alt="Result Visual" fill className="object-cover opacity-80 mix-blend-lighten" />
+                                )
                             ) : (
                                 <div className="absolute inset-0 flex items-center justify-center text-gray-700">Visual</div>
                             )}

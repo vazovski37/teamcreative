@@ -1,0 +1,332 @@
+# Portfolio Content Blocks — Visual Reference Guide
+
+> **For the Content Team**: This document explains every available block, what data you need to provide, and how it looks on the website.
+
+---
+
+## How It Works
+
+Each portfolio project has a `content` array. Each item in the array is a **block** with a `type` field. You compose a portfolio page by stacking blocks in any order.
+
+```json
+{
+  "content": [
+    { "type": "hero", ... },
+    { "type": "text-highlight", ... },
+    { "type": "info-card", ... }
+  ]
+}
+```
+
+> [!IMPORTANT]
+> All text fields support **localization**. You can pass either a plain string `"Hello"` or an object `{ "en": "Hello", "ge": "გამარჯობა" }`.
+
+---
+
+## 1. Hero Block
+
+**Type**: `hero` · **Purpose**: Full-screen intro section with background media. Usually the first block.
+
+![Hero Block — Center Aligned](C:/Users/User/.gemini/antigravity/brain/95306e18-9900-4d81-8437-b355e45affa2/01_hero_center_1771540956533.png)
+
+### Data Structure
+
+```json
+{
+  "type": "hero",
+  "media": "/images/project/cover.jpg",
+  "mediaType": "image",
+  "title": { "en": "Project Title", "ge": "პროექტის სახელი" },
+  "subtitle": { "en": "Category / Client", "ge": "კატეგორია / კლიენტი" },
+  "badge": { "en": "Social Media", "ge": "სოციალური მედია" },
+  "align": "center"
+}
+```
+
+| Field | Required | Options | Description |
+|---|---|---|---|
+| `media` | ✅ | image/video path | Background media |
+| `mediaType` | ✅ | `"image"` or `"video"` | Type of media |
+| `title` | Optional | text | Large heading |
+| `subtitle` | Optional | text | Smaller text above title |
+| `badge` | Optional | text | Pill-shaped tag above subtitle |
+| `align` | Optional | `"center"` (default) or `"left"` | Text alignment |
+
+---
+
+## 2. Text Highlight Block
+
+**Type**: `text-highlight` · **Purpose**: Important statements, chapter titles, or section text.
+
+### Center Aligned
+
+![Text Highlight — Center](C:/Users/User/.gemini/antigravity/brain/95306e18-9900-4d81-8437-b355e45affa2/02_text_center_1771540957613.png)
+
+### Left Aligned
+
+![Text Highlight — Left](C:/Users/User/.gemini/antigravity/brain/95306e18-9900-4d81-8437-b355e45affa2/03_text_left_1771540964616.png)
+
+### Data Structure
+
+```json
+{
+  "type": "text-highlight",
+  "label": { "en": "The Challenge", "ge": "გამოწვევა" },
+  "text": { "en": "Your main statement here...", "ge": "თქვენი ტექსტი..." },
+  "align": "center"
+}
+```
+
+| Field | Required | Options | Description |
+|---|---|---|---|
+| `text` | ✅ | text | Main paragraph content |
+| `label` | Optional | text | Small uppercase label above text |
+| `align` | Optional | `"center"` (default) or `"left"` | Text alignment |
+
+---
+
+## 3. Legacy Columns Block
+
+**Type**: `legacy-columns` · **Purpose**: Two-column layout for "Challenge vs Strategy" or similar comparisons.
+
+![Legacy Columns](C:/Users/User/.gemini/antigravity/brain/95306e18-9900-4d81-8437-b355e45affa2/04_legacy_columns_1771540965688.png)
+
+### Data Structure
+
+```json
+{
+  "type": "legacy-columns",
+  "left": {
+    "label": { "en": "The Task", "ge": "ამოცანა" },
+    "title": { "en": "Challenge", "ge": "გამოწვევა" },
+    "text": { "en": "Describe the problem...", "ge": "აღწერეთ პრობლემა..." }
+  },
+  "right": {
+    "label": { "en": "The Strategy", "ge": "სტრატეგია" },
+    "title": { "en": "Our Approach", "ge": "ჩვენი მიდგომა" },
+    "text": { "en": "Describe the solution...", "ge": "აღწერეთ გადაწყვეტა..." }
+  }
+}
+```
+
+| Field | Required | Description |
+|---|---|---|
+| `left.title` | ✅ | Left column heading |
+| `left.text` | ✅ | Left column paragraph |
+| `left.label` | Optional | Small label above heading |
+| `right.*` | Same as left | Right column content |
+
+---
+
+## 4. Info Card Block
+
+**Type**: `info-card` · **Purpose**: Media with an overlaid information card. Great for project details.
+
+### Variations
+
+````carousel
+### Paper Theme / Left Aligned
+![Info Card — Paper / Left](C:/Users/User/.gemini/antigravity/brain/95306e18-9900-4d81-8437-b355e45affa2/05_infocard_paper_left_1771540973903.png)
+<!-- slide -->
+### Paper Theme / Right Aligned
+![Info Card — Paper / Right](C:/Users/User/.gemini/antigravity/brain/95306e18-9900-4d81-8437-b355e45affa2/06_infocard_paper_right_1771540975358.png)
+<!-- slide -->
+### Dark Theme
+![Info Card — Dark](C:/Users/User/.gemini/antigravity/brain/95306e18-9900-4d81-8437-b355e45affa2/07_infocard_dark_1771540976724.png)
+<!-- slide -->
+### Glass Theme
+![Info Card — Glass](C:/Users/User/.gemini/antigravity/brain/95306e18-9900-4d81-8437-b355e45affa2/08_infocard_glass_1771540978141.png)
+````
+
+### Data Structure
+
+```json
+{
+  "type": "info-card",
+  "media": "/images/project/photo.jpg",
+  "mediaType": "image",
+  "title": { "en": "Card Title", "ge": "ბარათის სათაური" },
+  "align": "left",
+  "theme": "paper",
+  "details": [
+    { "label": { "en": "Client", "ge": "კლიენტი" }, "value": { "en": "Brand X", "ge": "ბრენდი X" } },
+    { "label": { "en": "Platform", "ge": "პლატფორმა" }, "value": { "en": "Instagram", "ge": "ინსტაგრამი" } }
+  ]
+}
+```
+
+| Field | Required | Options | Description |
+|---|---|---|---|
+| `media` | ✅ | path | Background image or video |
+| `mediaType` | ✅ | `"image"` / `"video"` | Type of media |
+| `title` | Optional | text | Card heading |
+| `align` | Optional | `"left"` or `"right"` | Which side the card appears |
+| `theme` | Optional | `"paper"`, `"dark"`, `"glass"` | Visual style of the card |
+| `details` | Optional | array | List of label/value pairs |
+
+---
+
+## 5. Media Grid Block
+
+**Type**: `media-grid` · **Purpose**: Gallery of images/videos in a grid layout.
+
+### Square Items (2 columns)
+
+![Media Grid — Square](C:/Users/User/.gemini/antigravity/brain/95306e18-9900-4d81-8437-b355e45affa2/09_mediagrid_square_1771540979470.png)
+
+### Wide Item (full width)
+
+![Media Grid — Wide](C:/Users/User/.gemini/antigravity/brain/95306e18-9900-4d81-8437-b355e45affa2/10_mediagrid_wide_1771540980898.png)
+
+### Mixed (squares + wide)
+
+![Media Grid — Mixed](C:/Users/User/.gemini/antigravity/brain/95306e18-9900-4d81-8437-b355e45affa2/11_mediagrid_mixed_v2_1771541045998.png)
+
+### Data Structure
+
+```json
+{
+  "type": "media-grid",
+  "items": [
+    { "media": "/images/photo1.jpg", "mediaType": "image", "size": "sq" },
+    { "media": "/images/photo2.jpg", "mediaType": "image", "size": "sq" },
+    { "media": "/images/wide.jpg", "mediaType": "image", "size": "wide" }
+  ]
+}
+```
+
+| Field | Required | Options | Description |
+|---|---|---|---|
+| `items[].media` | ✅ | path | Image or video path |
+| `items[].mediaType` | ✅ | `"image"` / `"video"` | Type |
+| `items[].size` | Optional | `"sq"` (default) or `"wide"` | `sq` = one column, `wide` = full width |
+
+---
+
+## 6. Reel Grid Block
+
+**Type**: `reel-grid` · **Purpose**: Vertical 9:16 cards, perfect for Reels/TikTok/Stories content.
+
+![Reel Grid](C:/Users/User/.gemini/antigravity/brain/95306e18-9900-4d81-8437-b355e45affa2/12_reelgrid_1771540983592.png)
+
+### Data Structure
+
+```json
+{
+  "type": "reel-grid",
+  "mobileLayout": "swipe",
+  "items": [
+    { "media": "/images/reel1.mp4", "mediaType": "video", "caption": { "en": "Behind the Scenes", "ge": "კულისებს მიღმა" } },
+    { "media": "/images/reel2.mp4", "mediaType": "video", "caption": { "en": "Product Demo", "ge": "პროდუქტის დემო" } },
+    { "media": "/images/reel3.mp4", "mediaType": "video", "caption": { "en": "Testimonial", "ge": "შეფასება" } }
+  ]
+}
+```
+
+| Field | Required | Options | Description |
+|---|---|---|---|
+| `mobileLayout` | Optional | `"swipe"` or `"column"` | `swipe` = horizontal scroll on mobile, `column` = stacked |
+| `items[].media` | ✅ | path | Media path |
+| `items[].mediaType` | ✅ | `"image"` / `"video"` | Type |
+| `items[].caption` | Optional | text | Caption overlay at the bottom |
+
+---
+
+## 7. Bento Grid Block
+
+**Type**: `bento-grid` · **Purpose**: Asymmetric layout — 2 small items stacked on the left, 1 large item on the right.
+
+![Bento Grid](C:/Users/User/.gemini/antigravity/brain/95306e18-9900-4d81-8437-b355e45affa2/13_bentogrid_v2_1771541015499.png)
+
+### Data Structure
+
+```json
+{
+  "type": "bento-grid",
+  "items": [
+    { "media": "/images/small1.jpg", "mediaType": "image", "span": "small", "caption": { "en": "Detail 1", "ge": "დეტალი 1" } },
+    { "media": "/images/small2.jpg", "mediaType": "image", "span": "small", "caption": { "en": "Detail 2", "ge": "დეტალი 2" } },
+    { "media": "/images/feature.jpg", "mediaType": "image", "span": "large", "caption": { "en": "Main Feature", "ge": "მთავარი" } }
+  ]
+}
+```
+
+| Field | Required | Options | Description |
+|---|---|---|---|
+| `items[].media` | ✅ | path | Media path |
+| `items[].mediaType` | ✅ | `"image"` / `"video"` | Type |
+| `items[].span` | ✅ | `"small"` or `"large"` | `small` = stacks on left, `large` = fills right column |
+| `items[].caption` | Optional | text | Caption overlay |
+
+---
+
+## 8. Vertical Showcase Block
+
+**Type**: `vertical-showcase` · **Purpose**: Single tall vertical media, great for mobile app screenshots or portrait content.
+
+![Vertical Showcase](C:/Users/User/.gemini/antigravity/brain/95306e18-9900-4d81-8437-b355e45affa2/14_vertical_showcase_1771540986229.png)
+
+### Data Structure
+
+```json
+{
+  "type": "vertical-showcase",
+  "media": "/images/mobile-screen.jpg",
+  "mediaType": "image",
+  "title": { "en": "App Design", "ge": "აპის დიზაინი" },
+  "overlayText": { "en": "Award-winning UX", "ge": "ჯილდოს მფლობელი UX" }
+}
+```
+
+| Field | Required | Options | Description |
+|---|---|---|---|
+| `media` | ✅ | path | Image or video |
+| `mediaType` | ✅ | `"image"` / `"video"` | Type |
+| `title` | Optional | text | Bold heading at the bottom |
+| `overlayText` | Optional | text | Smaller text under the title |
+
+---
+
+## 9. Results Block
+
+**Type**: `results` · **Purpose**: Displaying campaign outcomes with big numbers.
+
+![Results Block](C:/Users/User/.gemini/antigravity/brain/95306e18-9900-4d81-8437-b355e45affa2/15_results_v2_1771541016632.png)
+
+### Data Structure
+
+```json
+{
+  "type": "results",
+  "title": { "en": "Campaign Results", "ge": "კამპანიის შედეგები" },
+  "description": { "en": "Our strategy delivered...", "ge": "ჩვენმა სტრატეგიამ..." },
+  "stats": [
+    { "label": { "en": "Engagement", "ge": "ჩართულობა" }, "value": { "en": "150%", "ge": "150%" } },
+    { "label": { "en": "Reach", "ge": "მიღწევა" }, "value": { "en": "500K+", "ge": "500K+" } },
+    { "label": { "en": "Conversions", "ge": "კონვერსიები" }, "value": { "en": "12K", "ge": "12K" } },
+    { "label": { "en": "ROI", "ge": "ROI" }, "value": { "en": "3.5x", "ge": "3.5x" } }
+  ]
+}
+```
+
+| Field | Required | Description |
+|---|---|---|
+| `title` | ✅ | Section heading |
+| `description` | ✅ | Summary paragraph |
+| `stats` | ✅ | Array of label/value metric pairs |
+
+---
+
+## Quick Reference Table
+
+| Block Type | Best For | Media? | Text? |
+|---|---|---|---|
+| `hero` | Page intro | ✅ Background | Title, Subtitle, Badge |
+| `text-highlight` | Key statements | ❌ | Label + Text |
+| `legacy-columns` | Challenge vs Strategy | ❌ | Two columns with title + text |
+| `info-card` | Project details | ✅ Background | Title + key-value details |
+| `media-grid` | Photo/video gallery | ✅ Grid items | ❌ |
+| `reel-grid` | Reels/Stories showcase | ✅ Vertical items | Captions |
+| `bento-grid` | Asymmetric highlight | ✅ Mixed sizes | Captions |
+| `vertical-showcase` | Mobile/portrait content | ✅ Single vertical | Title + overlay text |
+| `results` | Campaign metrics | ❌ | Title + stats |

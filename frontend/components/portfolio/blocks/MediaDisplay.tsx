@@ -66,8 +66,8 @@ export function MediaDisplay({
         );
     }
 
-    // Use native img for blob/data URLs since next/image doesn't support them
-    const isBlobOrData = src.startsWith('blob:') || src.startsWith('data:');
+    // Use native img for blob/data/uploads URLs since next/image doesn't support them or might lack domain config
+    const isBlobOrData = src.startsWith('blob:') || src.startsWith('data:') || src.startsWith('/uploads/');
 
     return (
         <div

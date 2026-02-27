@@ -1,10 +1,10 @@
 
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/Container";
-import { getProjectsByCategory, projects } from "@/constants/portfolios";
-
 import { ProjectCard } from "@/components/portfolio/ProjectCard";
 import { notFound } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+import { Project } from "@/constants/portfolios";
 
 const CATEGORY_NAMES: Record<string, string> = {
     'social-media': 'Social Media',
@@ -15,6 +15,14 @@ const CATEGORY_NAMES: Record<string, string> = {
     'graphic-design': 'Graphic Design',
     'showcase': 'Portfolio',
 };
+
+export const revalidate = 3600;
+
+interface PageProps {
+    params: Promise<{
+        categorySlug: string;
+    }>;
+}
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { categorySlug } = await params;
@@ -31,35 +39,26 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 }
 
 export async function generateStaticParams() {
-    const slugs = [...new Set(projects.map((p) => p.categorySlug))];
-    return slugs.map((categorySlug) => ({ categorySlug }));
-}
-
-
-interface PageProps {
-    params: Promise<{
-        categorySlug: string;
-    }>;
+    const { data: projectsData } = await supabase.from('projects').select('categorySlug');
+    const projects = projectsData || [];
+    const slugs = [...new Set(projects.map((p: any) => p.categorySlug).filter(Boolean))];
+    return slugs.map((categorySlug: any) => ({ categorySlug }));
 }
 
 export default async function CategoryPage({ params }: PageProps) {
     const { categorySlug } = await params;
 
-    // Check if category exists by checking if any project has this categorySlug
-    // unique valid categories check
-    const validCategory = projects.some(p => p.categorySlug === categorySlug);
+    const { data: projectsData, error } = await supabase
+        .from('projects')
+        .select('*')
+        .eq('categorySlug', categorySlug);
 
-    if (!validCategory) {
-        // Alternatively, if no projects, maybe we still want to show an empty page if the category is technically valid?
-        // For now, if no projects match, assume 404 or just show empty. 
-        // Better to check against a known list of categories if we had one separate from projects.
-        // But since we derive everything from projects:
-        if (projects.filter(p => p.categorySlug === categorySlug).length === 0) {
-            notFound();
-        }
+    const categoryProjects = (projectsData || []) as Project[];
+
+    if (categoryProjects.length === 0) {
+        notFound();
     }
 
-    const categoryProjects = getProjectsByCategory(categorySlug);
     const categoryTitle = categoryProjects[0]?.category || categorySlug;
 
     return (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ContentBlock, Project } from '@/constants/portfolios';
 import { Container } from '@/components/ui/Container';
 import { BlockEditor } from '@/components/portfolio-builder/BlockEditorForms';
@@ -19,6 +19,7 @@ const BLOCK_TYPES: { type: ContentBlock['type']; label: string; color: string; i
     { type: 'vertical-showcase', label: 'Vertical Showcase', color: 'bg-cyan-500', icon: '📱' },
     { type: 'results', label: 'Results', color: 'bg-green-500', icon: '📊' },
     { type: 'legacy-columns', label: 'Legacy Columns', color: 'bg-orange-500', icon: '📰' },
+    { type: 'bento-grid', label: 'Bento Grid', color: 'bg-indigo-500', icon: '🍱' },
 ];
 
 function createDefaultBlock(type: ContentBlock['type']): ContentBlock {
@@ -31,6 +32,8 @@ function createDefaultBlock(type: ContentBlock['type']): ContentBlock {
         case 'vertical-showcase': return { type: 'vertical-showcase', media: '', mediaType: 'image' };
         case 'results': return { type: 'results', title: '', description: '', stats: [] };
         case 'legacy-columns': return { type: 'legacy-columns', left: { title: '', text: '' }, right: { title: '', text: '' } };
+        case 'bento-grid': return { type: 'bento-grid', items: [] };
+        default: throw new Error("Unknown block type");
     }
 }
 
@@ -55,6 +58,26 @@ const CATEGORY_DISPLAY: Record<string, string> = {
 };
 
 export default function PortfolioBuilderPage() {
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [isSaving, setIsSaving] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
+
+    useEffect(() => {
+        if (process.env.NODE_ENV !== 'development') return;
+        fetch('/api/builder/projects').then(r => r.json()).then(data => setProjects(data || []));
+    }, []);
+
+    if (process.env.NODE_ENV !== 'development') {
+        return (
+            <div className="min-h-screen text-white bg-black flex items-center justify-center p-8">
+                <div className="max-w-md text-center">
+                    <h1 className="text-xl font-bold mb-2">Access Denied</h1>
+                    <p className="text-gray-400">The Portfolio Builder is only available in local development mode.</p>
+                </div>
+            </div>
+        );
+    }
+
     // ─── Project metadata state ──────────────────────────────────
     const [id, setId] = useState('');
     const [slug, setSlug] = useState('');
@@ -109,6 +132,66 @@ export default function PortfolioBuilderPage() {
         setBlocks(newBlocks);
         if (expandedBlock === idx) setExpandedBlock(newIdx);
         else if (expandedBlock === newIdx) setExpandedBlock(idx);
+    };
+
+    const clearForm = () => {
+        setId(''); setSlug(''); setCategorySlug('social-media'); setClient(''); setTitle(''); setDescription(''); setCoverImage(''); setStrategy(''); setResults('');
+        setMetaTitle(''); setMetaDescription(''); setOgImage(''); setKeywords('');
+        setBlocks([]);
+    };
+
+    const loadProject = (p: Project) => {
+        setId(p.id); setSlug(p.slug); setCategorySlug(p.categorySlug); setClient(p.client); setTitle(p.title); setDescription(p.description); setCoverImage(p.coverImage || ''); setStrategy(p.strategy || ''); setResults(p.results || '');
+        setBlocks(p.content || []);
+        if (p.meta) {
+            setMetaTitle(p.meta.metaTitle || ''); setMetaDescription(p.meta.metaDescription || ''); setOgImage(p.meta.ogImage || ''); setKeywords(p.meta.keywords || '');
+        } else {
+            setMetaTitle(''); setMetaDescription(''); setOgImage(''); setKeywords('');
+        }
+    };
+
+    const saveProject = async () => {
+        if (!id || !slug || !title) return alert("ID, Slug, and Title are required");
+        setIsSaving(true);
+        try {
+            const res = await fetch('/api/builder/projects', {
+                method: 'POST',
+                body: JSON.stringify(project)
+            });
+            const data = await res.json();
+            if (data.success) {
+                setProjects(prev => {
+                    const idx = prev.findIndex(p => p.id === project.id);
+                    if (idx >= 0) { const next = [...prev]; next[idx] = project; return next; }
+                    return [...prev, project];
+                });
+                alert("Saved successfully!");
+            } else {
+                alert("Failed to save: " + data.error);
+            }
+        } catch (e) { alert("Error saving"); }
+        finally { setIsSaving(false); }
+    };
+
+    const deleteProject = async () => {
+        if (!id) return;
+        if (!confirm("Are you sure you want to delete this project?")) return;
+        setIsDeleting(true);
+        try {
+            const res = await fetch(`/api/builder/projects?id=${id}`, { method: 'DELETE' });
+            const data = await res.json();
+            if (data.success) {
+                setProjects(prev => prev.filter(p => p.id !== id));
+                clearForm();
+                alert("Deleted successfully!");
+            } else { alert("Failed to delete: " + data.error); }
+        } catch (e) { alert("Error deleting"); }
+        finally { setIsDeleting(false); }
+    };
+
+    const previewInNewTab = () => {
+        localStorage.setItem('portfolio-builder-draft', JSON.stringify(project));
+        window.open('/portfolio-builder/preview', '_blank');
     };
 
     // ─── Build the Project object ────────────────────────────────
@@ -179,6 +262,29 @@ export default function PortfolioBuilderPage() {
                                 </svg>
                                 JSON
                             </button>
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                            <select
+                                className="bg-white/5 border border-white/10 rounded-md px-2 py-1.5 text-xs text-white outline-none focus:border-blue-500/50"
+                                onChange={(e) => {
+                                    if (!e.target.value) clearForm();
+                                    else {
+                                        const p = projects.find(x => x.id === e.target.value);
+                                        if (p) loadProject(p);
+                                    }
+                                }}
+                                value={id}
+                            >
+                                <option value="" className="bg-black text-gray-400">-- New Project --</option>
+                                {projects.map(p => (
+                                    <option key={p.id} value={p.id} className="bg-black text-white">{p.title}</option>
+                                ))}
+                            </select>
+                            <button onClick={clearForm} className="px-3 py-1.5 rounded-md text-xs font-medium text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors">New</button>
+                            <button onClick={saveProject} disabled={isSaving} className="px-3 py-1.5 rounded-md text-xs font-medium text-white bg-blue-600 hover:bg-blue-500 transition-colors disabled:opacity-50">{isSaving ? 'Saving...' : 'Save'}</button>
+                            <button onClick={previewInNewTab} className="px-3 py-1.5 rounded-md text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-500 transition-colors">Preview Tab</button>
+                            {id && <button onClick={deleteProject} disabled={isDeleting} className="px-3 py-1.5 rounded-md text-xs font-medium text-red-400 hover:text-white bg-red-500/10 hover:bg-red-500/20 transition-colors disabled:opacity-50">{isDeleting ? 'Deleting...' : 'Del'}</button>}
                         </div>
 
                         <div className="flex items-center gap-2">
