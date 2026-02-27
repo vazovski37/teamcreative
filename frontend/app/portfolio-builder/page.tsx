@@ -7,7 +7,7 @@ import { Container } from '@/components/ui/Container';
 import { BlockEditor } from '@/components/portfolio-builder/BlockEditorForms';
 import { JsonPreview } from '@/components/portfolio-builder/JsonPreview';
 import { LivePreview } from '@/components/portfolio-builder/LivePreview';
-import { SimpleInput } from '@/components/portfolio-builder/LocalizedInput';
+import { SimpleInput, SelectInput } from '@/components/portfolio-builder/LocalizedInput';
 import { MediaUploadInput } from '@/components/portfolio-builder/MediaUploadInput';
 
 // ─── Block type config ───────────────────────────────────────────
@@ -45,21 +45,44 @@ export default function PortfolioBuilderPage() {
     const [isSaving, setIsSaving] = useState(false);
     const [isDeleting, setIsDeleting] = useState(false);
 
+    // ─── Categories state ───────────────────────────────────────
+    const [categories, setCategories] = useState<{ value: string; label: string }[]>([]);
+    const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false);
+    const [editingCategorySlug, setEditingCategorySlug] = useState<string | null>(null);
+    const [newCategoryName, setNewCategoryName] = useState('');
+
     useEffect(() => {
-        // Fetch existing projects from Supabase to populate the dropdown
+        // Fetch existing projects from Supabase to populate the dropdown and categories list
         const fetchProjects = async () => {
             const { data } = await supabase.from('projects').select('*');
             if (data) {
-                setProjects(data as Project[]);
+                const fetchedProjects = data as Project[];
+                setProjects(fetchedProjects);
+
+                // Extract unique categories
+                const categoryMap = new Map<string, string>();
+                fetchedProjects.forEach(p => {
+                    if (p.categorySlug && p.category) {
+                        categoryMap.set(p.categorySlug, p.category);
+                    }
+                });
+
+                const uniqueCategories = Array.from(categoryMap.entries()).map(([value, label]) => ({ value, label }));
+                setCategories(uniqueCategories.length > 0 ? uniqueCategories : [{ value: 'portfolio', label: 'Portfolio' }]);
+
+                // Set initial category block if empty
+                if (!categorySlug && uniqueCategories.length > 0) {
+                    setCategorySlug(uniqueCategories[0].value);
+                }
             }
         };
         fetchProjects();
     }, []);
 
     // ─── Project metadata state ──────────────────────────────────
-    const [id, setId] = useState('');
+    const [id, setId] = useState<string | null>(null);
     const [slug, setSlug] = useState('');
-    const [category, setCategory] = useState('Social Media');
+    const [categorySlug, setCategorySlug] = useState('');
     const [client, setClient] = useState('');
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -113,13 +136,15 @@ export default function PortfolioBuilderPage() {
     };
 
     const clearForm = () => {
-        setId(''); setSlug(''); setCategory('Social Media'); setClient(''); setTitle(''); setDescription(''); setCoverImage(''); setStrategy(''); setResults('');
+        setId(null); setSlug('');
+        setCategorySlug(categories.length > 0 ? categories[0].value : 'portfolio');
+        setClient(''); setTitle(''); setDescription(''); setCoverImage(''); setStrategy(''); setResults('');
         setMetaTitle(''); setMetaDescription(''); setOgImage(''); setKeywords('');
         setBlocks([]);
     };
 
     const loadProject = (p: Project) => {
-        setId(p.id); setSlug(p.slug); setCategory(p.category || 'Portfolio'); setClient(p.client); setTitle(p.title); setDescription(p.description); setCoverImage(p.coverImage || ''); setStrategy(p.strategy || ''); setResults(p.results || '');
+        setId(p.id); setSlug(p.slug); setCategorySlug(p.categorySlug); setClient(p.client); setTitle(p.title); setDescription(p.description); setCoverImage(p.coverImage || ''); setStrategy(p.strategy || ''); setResults(p.results || '');
         setBlocks(p.content || []);
         if (p.meta) {
             setMetaTitle(p.meta.metaTitle || ''); setMetaDescription(p.meta.metaDescription || ''); setOgImage(p.meta.ogImage || ''); setKeywords(p.meta.keywords || '');
@@ -129,18 +154,24 @@ export default function PortfolioBuilderPage() {
     };
 
     const saveProject = async () => {
-        if (!id || !slug || !title) return alert("ID, Slug, and Title are required");
+        if (!slug || !title) return alert("Slug and Title are required");
         setIsSaving(true);
         try {
+            // Generate UUID if it's a new project
+            const projectId = id || crypto.randomUUID();
+            const projectToSave = { ...project, id: projectId };
+
             const { error } = await supabase
                 .from('projects')
-                .upsert(project);
+                .upsert(projectToSave);
 
             if (!error) {
+                if (!id) setId(projectId); // Update local state if it was a new creation
+
                 setProjects(prev => {
-                    const idx = prev.findIndex(p => p.id === project.id);
-                    if (idx >= 0) { const next = [...prev]; next[idx] = project; return next; }
-                    return [...prev, project];
+                    const idx = prev.findIndex(p => p.id === projectId);
+                    if (idx >= 0) { const next = [...prev]; next[idx] = projectToSave; return next; }
+                    return [...prev, projectToSave];
                 });
                 alert("Published successfully!");
                 // Force Next.js ISR cache rebuilds
@@ -180,12 +211,98 @@ export default function PortfolioBuilderPage() {
         window.open('/portfolio-builder/preview', '_blank');
     };
 
+    // ─── Category Manager Handlers ───────────────────────────────
+    const handleAddCategory = () => {
+        if (!newCategoryName.trim()) return;
+        const tempSlug = newCategoryName.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+        if (categories.some(c => c.value === tempSlug)) {
+            alert("A category with this name/slug already exists.");
+            return;
+        }
+        setCategories([...categories, { value: tempSlug, label: newCategoryName.trim() }]);
+        setCategorySlug(tempSlug);
+        setNewCategoryName('');
+    };
+
+    const handleDeleteCategory = (slugToDelete: string) => {
+        // Can't delete if an existing project uses it
+        if (projects.some(p => p.categorySlug === slugToDelete)) {
+            alert("Cannot remove this category because 1 or more published projects are using it. Please move those projects to another category first.");
+            return;
+        }
+        setCategories(categories.filter(c => c.value !== slugToDelete));
+        if (categorySlug === slugToDelete) {
+            setCategorySlug(categories[0]?.value || 'portfolio');
+        }
+    };
+
+    const handleUpdateCategory = async (oldSlug: string, newLabel: string) => {
+        if (!newLabel.trim()) return;
+        const newSlug = newLabel.trim().toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
+
+        // If they just saved the exact same name, or renamed to something that already exists
+        if (oldSlug === newSlug) {
+            setEditingCategorySlug(null);
+            return;
+        }
+        if (categories.some(c => c.value === newSlug && c.value !== oldSlug)) {
+            alert("A category with this name already exists.");
+            return;
+        }
+
+        // Identify if there are published projects using this category
+        const affectedProjects = projects.filter(p => p.categorySlug === oldSlug);
+
+        if (affectedProjects.length > 0) {
+            const proceed = confirm(`This will rename the category for ${affectedProjects.length} existing project(s). Are you sure?`);
+            if (!proceed) {
+                setEditingCategorySlug(null);
+                return;
+            }
+
+            // Update them in Supabase
+            setIsSaving(true);
+            try {
+                const { error } = await supabase
+                    .from('projects')
+                    .update({ category: newLabel.trim(), categorySlug: newSlug })
+                    .eq('categorySlug', oldSlug);
+
+                if (error) throw error;
+
+                // Update local projects
+                setProjects(prev => prev.map(p =>
+                    p.categorySlug === oldSlug
+                        ? { ...p, category: newLabel.trim(), categorySlug: newSlug }
+                        : p
+                ));
+
+                // Force Next.js ISR cache rebuilds
+                await fetch(`/api/revalidate?path=/portfolios`);
+                await fetch(`/api/revalidate?path=/portfolios/${oldSlug}`); // Might not clear everything perfectly but helps
+                await fetch(`/api/revalidate?path=/portfolios/${newSlug}`);
+
+            } catch (e: any) {
+                alert("Failed to update projects: " + e.message);
+                setIsSaving(false);
+                setEditingCategorySlug(null);
+                return;
+            }
+            setIsSaving(false);
+        }
+
+        // Update local options
+        setCategories(categories.map(c => c.value === oldSlug ? { value: newSlug, label: newLabel.trim() } : c));
+        if (categorySlug === oldSlug) setCategorySlug(newSlug);
+        setEditingCategorySlug(null);
+    };
+
     // ─── Build the Project object ────────────────────────────────
     const project: Project = {
-        id: id || 'project-id',
+        id: id || '', // handled on save
         slug: slug || 'project-slug',
-        category: category || 'Portfolio',
-        categorySlug: category ? category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : 'portfolio',
+        category: categories.find(c => c.value === categorySlug)?.label || 'Portfolio',
+        categorySlug: categorySlug || 'portfolio',
         client: client || 'Client Name',
         title: title || 'Project Title',
         description: description || '',
@@ -260,7 +377,7 @@ export default function PortfolioBuilderPage() {
                                         if (p) loadProject(p);
                                     }
                                 }}
-                                value={id}
+                                value={id || ''}
                             >
                                 <option value="" className="bg-black text-gray-400">-- New Project --</option>
                                 {projects.map(p => (
@@ -296,13 +413,22 @@ export default function PortfolioBuilderPage() {
                                 <h2 className="text-xs font-bold uppercase tracking-widest text-gray-400">Project Info</h2>
                             </div>
 
-                            <div className="grid grid-cols-2 gap-3">
-                                <SimpleInput label="ID" value={id} onChange={setId} placeholder="my-project" required />
+                            <div className="grid grid-cols-1 gap-3">
                                 <SimpleInput label="Slug" value={slug} onChange={setSlug} placeholder="my-project-slug" required />
                             </div>
 
-                            <div className="grid grid-cols-2 gap-3">
-                                <SimpleInput label="Category" value={category} onChange={setCategory} placeholder="Custom Category" required />
+                            <div className="grid grid-cols-2 gap-3 items-end">
+                                <div className="flex gap-2 items-end">
+                                    <div className="flex-1">
+                                        <SelectInput label="Category" value={categorySlug} onChange={setCategorySlug} options={categories} required />
+                                    </div>
+                                    <button
+                                        onClick={() => setIsCategoryModalOpen(true)}
+                                        className="h-10 px-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-md text-xs font-medium text-gray-300 transition-colors"
+                                    >
+                                        Manage
+                                    </button>
+                                </div>
                                 <SimpleInput label="Client" value={client} onChange={setClient} placeholder="Client Name" required />
                             </div>
 
@@ -504,7 +630,7 @@ export default function PortfolioBuilderPage() {
                             <LivePreview
                                 blocks={blocks}
                                 title={title || 'Project Title'}
-                                category={category || 'Portfolio'}
+                                category={categories.find(c => c.value === categorySlug)?.label || 'Portfolio'}
                                 client={client || 'Client Name'}
                             />
                         </div>
@@ -513,6 +639,102 @@ export default function PortfolioBuilderPage() {
                     )}
                 </div>
             </div>
+
+            {/* ─── Category Manager Modal Overlay ───────────────── */}
+            {isCategoryModalOpen && (
+                <div className="fixed inset-0 z-[100] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+                    <div className="bg-neutral-900 border border-white/10 rounded-2xl w-full max-w-md overflow-hidden shadow-2xl">
+                        <div className="flex items-center justify-between p-4 border-b border-white/10">
+                            <h2 className="text-sm font-bold">Manage Categories</h2>
+                            <button
+                                onClick={() => setIsCategoryModalOpen(false)}
+                                className="text-gray-400 hover:text-white p-1"
+                            >
+                                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div className="p-4 space-y-4">
+                            {/* Add New */}
+                            <div className="flex gap-2">
+                                <input
+                                    type="text"
+                                    value={newCategoryName}
+                                    onChange={(e) => setNewCategoryName(e.target.value)}
+                                    placeholder="New category name..."
+                                    className="flex-1 bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-blue-500/50"
+                                    onKeyDown={(e) => e.key === 'Enter' && handleAddCategory()}
+                                />
+                                <button
+                                    onClick={handleAddCategory}
+                                    disabled={!newCategoryName.trim()}
+                                    className="px-4 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-lg text-sm font-medium transition-colors"
+                                >
+                                    Add
+                                </button>
+                            </div>
+
+                            {/* List */}
+                            <div className="space-y-1 max-h-[40vh] overflow-y-auto pr-2">
+                                {categories.map(cat => {
+                                    const isEditing = editingCategorySlug === cat.value;
+                                    return (
+                                        <div key={cat.value} className="flex items-center gap-2 p-2 rounded-lg bg-white/5 border border-transparent hover:border-white/10 group">
+                                            {isEditing ? (
+                                                <input
+                                                    autoFocus
+                                                    defaultValue={cat.label}
+                                                    className="flex-1 bg-black border border-blue-500/50 rounded px-2 py-1 text-sm text-white focus:outline-none"
+                                                    onKeyDown={(e) => {
+                                                        if (e.key === 'Enter') handleUpdateCategory(cat.value, (e.target as HTMLInputElement).value);
+                                                        if (e.key === 'Escape') setEditingCategorySlug(null);
+                                                    }}
+                                                    onBlur={(e) => handleUpdateCategory(cat.value, e.target.value)}
+                                                />
+                                            ) : (
+                                                <div className="flex-1">
+                                                    <div className="text-sm text-white">{cat.label}</div>
+                                                    <div className="text-[10px] text-gray-500">/{cat.value}</div>
+                                                </div>
+                                            )}
+
+                                            {!isEditing && (
+                                                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                    <button
+                                                        onClick={() => setEditingCategorySlug(cat.value)}
+                                                        className="p-1.5 text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 rounded transition-colors"
+                                                        title="Rename"
+                                                    >
+                                                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                                        </svg>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeleteCategory(cat.value)}
+                                                        className="p-1.5 text-gray-400 hover:text-red-400 bg-white/5 hover:bg-white/10 rounded transition-colors"
+                                                        title="Delete"
+                                                    >
+                                                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                                        </svg>
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                                {categories.length === 0 && (
+                                    <div className="text-center py-4 text-sm text-gray-500">
+                                        No categories yet
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
