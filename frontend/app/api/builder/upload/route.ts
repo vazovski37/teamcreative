@@ -1,36 +1,46 @@
 import { NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import path from 'path';
+import { supabase } from '@/lib/supabase';
 
 export async function POST(request: Request) {
-    if (process.env.NODE_ENV !== 'development') {
-        return new NextResponse('Not Found', { status: 404 });
-    }
-
     try {
-        const data = await request.formData();
-        const file: File | null = data.get('file') as unknown as File;
+        const formData = await request.formData();
+        const file = formData.get('file') as File | null;
 
         if (!file) {
-            return NextResponse.json({ success: false, error: 'No file found' }, { status: 400 });
+            return NextResponse.json({ success: false, error: 'No file uploaded' }, { status: 400 });
         }
 
         const bytes = await file.arrayBuffer();
         const buffer = Buffer.from(bytes);
 
-        const ext = path.extname(file.name);
-        const namePart = path.basename(file.name, ext).replace(/[^a-zA-Z0-9_-]/g, '');
-        const filename = `${namePart}-${Date.now()}${ext}`;
+        // Generate a unique filename
+        const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
 
-        const uploadDir = path.join(process.cwd(), 'public', 'uploads');
-        await mkdir(uploadDir, { recursive: true });
+        // Upload to Supabase Storage bucket named 'portfolio-media'
+        const { error } = await supabase
+            .storage
+            .from('portfolio-media')
+            .upload(`uploads/${filename}`, buffer, {
+                contentType: file.type,
+                upsert: false
+            });
 
-        const filepath = path.join(uploadDir, filename);
-        await writeFile(filepath, buffer);
+        if (error) {
+            console.error('Supabase upload error:', error);
+            return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+        }
 
-        return NextResponse.json({ success: true, url: `/uploads/${filename}` });
+        // Get the public URL
+        const { data: publicUrlData } = supabase
+            .storage
+            .from('portfolio-media')
+            .getPublicUrl(`uploads/${filename}`);
+
+        // The builder UI expects { success: true, url: string }
+        return NextResponse.json({ success: true, url: publicUrlData.publicUrl });
+
     } catch (error: any) {
-        console.error('Upload error:', error);
+        console.error('Upload handler error:', error);
         return NextResponse.json({ success: false, error: error.message }, { status: 500 });
     }
 }
