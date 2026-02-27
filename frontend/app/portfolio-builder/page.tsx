@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react';
 import { ContentBlock, Project } from '@/constants/portfolios';
+import { supabase } from '@/lib/supabase';
 import { Container } from '@/components/ui/Container';
 import { BlockEditor } from '@/components/portfolio-builder/BlockEditorForms';
 import { JsonPreview } from '@/components/portfolio-builder/JsonPreview';
 import { LivePreview } from '@/components/portfolio-builder/LivePreview';
-import { SimpleInput, SelectInput } from '@/components/portfolio-builder/LocalizedInput';
+import { SimpleInput } from '@/components/portfolio-builder/LocalizedInput';
 import { MediaUploadInput } from '@/components/portfolio-builder/MediaUploadInput';
 
 // ─── Block type config ───────────────────────────────────────────
@@ -37,25 +38,7 @@ function createDefaultBlock(type: ContentBlock['type']): ContentBlock {
     }
 }
 
-const CATEGORY_OPTIONS = [
-    { value: 'social-media', label: 'Social Media' },
-    { value: 'web-development', label: 'Web Development' },
-    { value: 'ui-ux', label: 'UI/UX Design' },
-    { value: 'branding', label: 'Branding' },
-    { value: 'seo', label: 'SEO' },
-    { value: 'graphic-design', label: 'Graphic Design' },
-    { value: 'showcase', label: 'Showcase' },
-];
-
-const CATEGORY_DISPLAY: Record<string, string> = {
-    'social-media': 'Social Media',
-    'web-development': 'Web Development',
-    'ui-ux': 'UI/UX Design',
-    'branding': 'Branding',
-    'seo': 'SEO',
-    'graphic-design': 'Graphic Design',
-    'showcase': 'Portfolio',
-};
+// Removed static categories
 
 export default function PortfolioBuilderPage() {
     const [projects, setProjects] = useState<Project[]>([]);
@@ -63,25 +46,20 @@ export default function PortfolioBuilderPage() {
     const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
-        if (process.env.NODE_ENV !== 'development') return;
-        fetch('/api/builder/projects').then(r => r.json()).then(data => setProjects(data || []));
+        // Fetch existing projects from Supabase to populate the dropdown
+        const fetchProjects = async () => {
+            const { data } = await supabase.from('projects').select('*');
+            if (data) {
+                setProjects(data as Project[]);
+            }
+        };
+        fetchProjects();
     }, []);
-
-    if (process.env.NODE_ENV !== 'development') {
-        return (
-            <div className="min-h-screen text-white bg-black flex items-center justify-center p-8">
-                <div className="max-w-md text-center">
-                    <h1 className="text-xl font-bold mb-2">Access Denied</h1>
-                    <p className="text-gray-400">The Portfolio Builder is only available in local development mode.</p>
-                </div>
-            </div>
-        );
-    }
 
     // ─── Project metadata state ──────────────────────────────────
     const [id, setId] = useState('');
     const [slug, setSlug] = useState('');
-    const [categorySlug, setCategorySlug] = useState('social-media');
+    const [category, setCategory] = useState('Social Media');
     const [client, setClient] = useState('');
     const [title, setTitle] = useState('');
     const [description, setDescription] = useState('');
@@ -135,13 +113,13 @@ export default function PortfolioBuilderPage() {
     };
 
     const clearForm = () => {
-        setId(''); setSlug(''); setCategorySlug('social-media'); setClient(''); setTitle(''); setDescription(''); setCoverImage(''); setStrategy(''); setResults('');
+        setId(''); setSlug(''); setCategory('Social Media'); setClient(''); setTitle(''); setDescription(''); setCoverImage(''); setStrategy(''); setResults('');
         setMetaTitle(''); setMetaDescription(''); setOgImage(''); setKeywords('');
         setBlocks([]);
     };
 
     const loadProject = (p: Project) => {
-        setId(p.id); setSlug(p.slug); setCategorySlug(p.categorySlug); setClient(p.client); setTitle(p.title); setDescription(p.description); setCoverImage(p.coverImage || ''); setStrategy(p.strategy || ''); setResults(p.results || '');
+        setId(p.id); setSlug(p.slug); setCategory(p.category || 'Portfolio'); setClient(p.client); setTitle(p.title); setDescription(p.description); setCoverImage(p.coverImage || ''); setStrategy(p.strategy || ''); setResults(p.results || '');
         setBlocks(p.content || []);
         if (p.meta) {
             setMetaTitle(p.meta.metaTitle || ''); setMetaDescription(p.meta.metaDescription || ''); setOgImage(p.meta.ogImage || ''); setKeywords(p.meta.keywords || '');
@@ -154,22 +132,25 @@ export default function PortfolioBuilderPage() {
         if (!id || !slug || !title) return alert("ID, Slug, and Title are required");
         setIsSaving(true);
         try {
-            const res = await fetch('/api/builder/projects', {
-                method: 'POST',
-                body: JSON.stringify(project)
-            });
-            const data = await res.json();
-            if (data.success) {
+            const { error } = await supabase
+                .from('projects')
+                .upsert(project);
+
+            if (!error) {
                 setProjects(prev => {
                     const idx = prev.findIndex(p => p.id === project.id);
                     if (idx >= 0) { const next = [...prev]; next[idx] = project; return next; }
                     return [...prev, project];
                 });
-                alert("Saved successfully!");
+                alert("Published successfully!");
+                // Force Next.js ISR cache rebuilds
+                await fetch(`/api/revalidate?path=/portfolios`);
+                await fetch(`/api/revalidate?path=/portfolios/${project.categorySlug}`);
+                await fetch(`/api/revalidate?path=/portfolios/${project.categorySlug}/${project.slug}`);
             } else {
-                alert("Failed to save: " + data.error);
+                alert("Failed to publish: " + error.message);
             }
-        } catch (e) { alert("Error saving"); }
+        } catch (e: any) { alert("Error saving: " + e.message); }
         finally { setIsSaving(false); }
     };
 
@@ -178,14 +159,19 @@ export default function PortfolioBuilderPage() {
         if (!confirm("Are you sure you want to delete this project?")) return;
         setIsDeleting(true);
         try {
-            const res = await fetch(`/api/builder/projects?id=${id}`, { method: 'DELETE' });
-            const data = await res.json();
-            if (data.success) {
+            const { error } = await supabase
+                .from('projects')
+                .delete()
+                .eq('id', id);
+
+            if (!error) {
                 setProjects(prev => prev.filter(p => p.id !== id));
                 clearForm();
                 alert("Deleted successfully!");
-            } else { alert("Failed to delete: " + data.error); }
-        } catch (e) { alert("Error deleting"); }
+                // Revalidate list pages
+                await fetch(`/api/revalidate?path=/portfolios`);
+            } else { alert("Failed to delete: " + error.message); }
+        } catch (e: any) { alert("Error deleting: " + e.message); }
         finally { setIsDeleting(false); }
     };
 
@@ -198,8 +184,8 @@ export default function PortfolioBuilderPage() {
     const project: Project = {
         id: id || 'project-id',
         slug: slug || 'project-slug',
-        category: CATEGORY_DISPLAY[categorySlug] || categorySlug,
-        categorySlug,
+        category: category || 'Portfolio',
+        categorySlug: category ? category.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '') : 'portfolio',
         client: client || 'Client Name',
         title: title || 'Project Title',
         description: description || '',
@@ -282,7 +268,7 @@ export default function PortfolioBuilderPage() {
                                 ))}
                             </select>
                             <button onClick={clearForm} className="px-3 py-1.5 rounded-md text-xs font-medium text-gray-400 hover:text-white bg-white/5 hover:bg-white/10 transition-colors">New</button>
-                            <button onClick={saveProject} disabled={isSaving} className="px-3 py-1.5 rounded-md text-xs font-medium text-white bg-blue-600 hover:bg-blue-500 transition-colors disabled:opacity-50">{isSaving ? 'Saving...' : 'Save'}</button>
+                            <button onClick={saveProject} disabled={isSaving} className="px-3 py-1.5 rounded-md text-xs font-medium text-white bg-blue-600 hover:bg-blue-500 transition-colors disabled:opacity-50">{isSaving ? 'Publishing...' : 'Publish'}</button>
                             <button onClick={previewInNewTab} className="px-3 py-1.5 rounded-md text-xs font-medium text-white bg-emerald-600 hover:bg-emerald-500 transition-colors">Preview Tab</button>
                             {id && <button onClick={deleteProject} disabled={isDeleting} className="px-3 py-1.5 rounded-md text-xs font-medium text-red-400 hover:text-white bg-red-500/10 hover:bg-red-500/20 transition-colors disabled:opacity-50">{isDeleting ? 'Deleting...' : 'Del'}</button>}
                         </div>
@@ -316,7 +302,7 @@ export default function PortfolioBuilderPage() {
                             </div>
 
                             <div className="grid grid-cols-2 gap-3">
-                                <SelectInput label="Category" value={categorySlug} onChange={setCategorySlug} options={CATEGORY_OPTIONS} required />
+                                <SimpleInput label="Category" value={category} onChange={setCategory} placeholder="Custom Category" required />
                                 <SimpleInput label="Client" value={client} onChange={setClient} placeholder="Client Name" required />
                             </div>
 
@@ -518,7 +504,7 @@ export default function PortfolioBuilderPage() {
                             <LivePreview
                                 blocks={blocks}
                                 title={title || 'Project Title'}
-                                category={CATEGORY_DISPLAY[categorySlug] || categorySlug}
+                                category={category || 'Portfolio'}
                                 client={client || 'Client Name'}
                             />
                         </div>
