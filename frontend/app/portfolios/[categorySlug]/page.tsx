@@ -17,6 +17,7 @@ const CATEGORY_NAMES: Record<string, string> = {
 };
 
 export const revalidate = 3600;
+export const dynamicParams = true;
 
 interface PageProps {
     params: Promise<{

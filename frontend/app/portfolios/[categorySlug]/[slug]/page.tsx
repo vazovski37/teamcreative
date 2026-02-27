@@ -16,6 +16,7 @@ import { BentoGridBlock } from "@/components/portfolio/blocks/BentoGridBlock";
 import { ResultsCTA } from "@/components/portfolio/ResultsCTA";
 
 export const revalidate = 3600;
+export const dynamicParams = true;
 
 interface PageProps {
     params: Promise<{

@@ -5,7 +5,7 @@ export async function GET(request: NextRequest) {
     // You should probably add a secret token check here if this routes gets public.
     const path = request.nextUrl.searchParams.get('path');
     if (path) {
-        revalidatePath(path);
+        revalidatePath(path, 'layout');
         return NextResponse.json({ revalidated: true, now: Date.now() });
     }
     return NextResponse.json({ revalidated: false, message: 'Missing path to revalidate' }, { status: 400 });
