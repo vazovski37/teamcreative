@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState } from 'react';
+import { supabase } from '@/lib/supabase';
 
 interface MediaUploadInputProps {
     label: string;
@@ -21,24 +22,35 @@ export function MediaUploadInput({ label, value, onChange, placeholder, required
 
         try {
             setIsUploading(true);
-            const formData = new FormData();
-            formData.append('file', file);
+            // Generate a unique filename
+            const filename = `${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.-]/g, '_')}`;
 
-            const res = await fetch('/api/builder/upload', {
-                method: 'POST',
-                body: formData
-            });
-            const data = await res.json();
+            // Upload directly to Supabase
+            const { error } = await supabase
+                .storage
+                .from('portfolio-media')
+                .upload(`uploads/${filename}`, file, {
+                    contentType: file.type,
+                    upsert: false
+                });
 
-            if (data.success) {
-                setFileName(file.name);
-                onChange(data.url);
-            } else {
-                alert('Upload failed: ' + data.error);
+            if (error) {
+                alert('Upload failed: ' + error.message);
+                return;
             }
-        } catch (err) {
+
+            // Get the public URL
+            const { data: publicUrlData } = supabase
+                .storage
+                .from('portfolio-media')
+                .getPublicUrl(`uploads/${filename}`);
+
+            setFileName(file.name);
+            onChange(publicUrlData.publicUrl);
+
+        } catch (err: any) {
             console.error(err);
-            alert('Upload error');
+            alert('Upload error: ' + err.message);
         } finally {
             setIsUploading(false);
             if (fileInputRef.current) {
