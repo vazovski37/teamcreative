@@ -632,6 +632,7 @@ export default function PortfolioBuilderPage() {
                                 title={title || 'Project Title'}
                                 category={categories.find(c => c.value === categorySlug)?.label || 'Portfolio'}
                                 client={client || 'Client Name'}
+                                coverImage={coverImage}
                             />
                         </div>
                     ) : (

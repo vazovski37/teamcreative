@@ -15,9 +15,10 @@ interface LivePreviewProps {
     title: string;
     category: string;
     client: string;
+    coverImage?: string;
 }
 
-export function LivePreview({ blocks, title, category, client }: LivePreviewProps) {
+export function LivePreview({ blocks, title, category, client, coverImage }: LivePreviewProps) {
     if (blocks.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center h-full text-center px-8">
@@ -52,7 +53,7 @@ export function LivePreview({ blocks, title, category, client }: LivePreviewProp
             {blocks.map((block, idx) => {
                 switch (block.type) {
                     case 'hero':
-                        return <HeroBlock key={`${block.type}-${idx}`} {...block} />;
+                        return <HeroBlock key={`${block.type}-${idx}`} {...block} media={block.media || coverImage} />;
                     case 'text-highlight':
                         return <TextBlock key={`${block.type}-${idx}`} text={block.text} label={block.label} align={block.align} />;
                     case 'legacy-columns':

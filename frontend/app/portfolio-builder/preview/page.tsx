@@ -19,7 +19,6 @@ export default function PreviewPage() {
     const [project, setProject] = useState<Project | null>(null);
 
     useEffect(() => {
-        if (process.env.NODE_ENV !== 'development') return;
         const draft = localStorage.getItem('portfolio-builder-draft');
         if (draft) {
             try {
@@ -29,17 +28,6 @@ export default function PreviewPage() {
             }
         }
     }, []);
-
-    if (process.env.NODE_ENV !== 'development') {
-        return (
-            <div className="min-h-screen text-white bg-black flex items-center justify-center p-8">
-                <div className="max-w-md text-center">
-                    <h1 className="text-xl font-bold mb-2">Access Denied</h1>
-                    <p className="text-gray-400">The Portfolio Builder is only available in local development mode.</p>
-                </div>
-            </div>
-        );
-    }
 
     if (!project) {
         return <div className="min-h-screen bg-black text-white flex items-center justify-center">Loading Preview...</div>;
