@@ -14,6 +14,7 @@ import { ResultsBlock } from "@/components/portfolio/blocks/ResultsBlock";
 import { LegacyColumnsBlock } from "@/components/portfolio/blocks/LegacyColumnsBlock";
 import { BentoGridBlock } from "@/components/portfolio/blocks/BentoGridBlock";
 import { ResultsCTA } from "@/components/portfolio/ResultsCTA";
+import { decodeRouteParam } from "@/lib/route-params";
 
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -27,12 +28,14 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { categorySlug, slug } = await params;
+    const resolvedCategorySlug = decodeRouteParam(categorySlug);
+    const resolvedSlug = decodeRouteParam(slug);
 
     const { data } = await supabase
         .from('projects')
         .select('*')
-        .eq('categorySlug', categorySlug)
-        .eq('slug', slug)
+        .eq('categorySlug', resolvedCategorySlug)
+        .eq('slug', resolvedSlug)
         .single();
 
     const project = data as Project | null;
@@ -79,12 +82,14 @@ export async function generateStaticParams() {
 
 export default async function ProjectPage({ params }: PageProps) {
     const { categorySlug, slug } = await params;
+    const resolvedCategorySlug = decodeRouteParam(categorySlug);
+    const resolvedSlug = decodeRouteParam(slug);
 
     const { data } = await supabase
         .from('projects')
         .select('*')
-        .eq('categorySlug', categorySlug)
-        .eq('slug', slug)
+        .eq('categorySlug', resolvedCategorySlug)
+        .eq('slug', resolvedSlug)
         .single();
 
     const project = data as Project | null;

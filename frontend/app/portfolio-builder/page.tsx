@@ -9,6 +9,7 @@ import { JsonPreview } from '@/components/portfolio-builder/JsonPreview';
 import { LivePreview } from '@/components/portfolio-builder/LivePreview';
 import { SimpleInput, SelectInput } from '@/components/portfolio-builder/LocalizedInput';
 import { MediaUploadInput } from '@/components/portfolio-builder/MediaUploadInput';
+import { buildRevalidateUrl, normalizeProjectSlug } from '@/lib/route-params';
 
 // ─── Block type config ───────────────────────────────────────────
 const BLOCK_TYPES: { type: ContentBlock['type']; label: string; color: string; icon: string }[] = [
@@ -154,18 +155,21 @@ export default function PortfolioBuilderPage() {
     };
 
     const saveProject = async () => {
-        if (!slug || !title) return alert("Slug and Title are required");
+        const normalizedSlug = normalizeProjectSlug(slug);
+
+        if (!normalizedSlug || !title) return alert("Slug and Title are required");
         setIsSaving(true);
         try {
             // Generate UUID if it's a new project
             const projectId = id || crypto.randomUUID();
-            const projectToSave = { ...project, id: projectId };
+            const projectToSave = { ...project, id: projectId, slug: normalizedSlug };
 
             const { error } = await supabase
                 .from('projects')
                 .upsert(projectToSave);
 
             if (!error) {
+                if (normalizedSlug !== slug) setSlug(normalizedSlug);
                 if (!id) setId(projectId); // Update local state if it was a new creation
 
                 setProjects(prev => {
@@ -175,9 +179,9 @@ export default function PortfolioBuilderPage() {
                 });
                 alert("Published successfully!");
                 // Force Next.js ISR cache rebuilds
-                await fetch(`/api/revalidate?path=/portfolios`);
-                await fetch(`/api/revalidate?path=/portfolios/${project.categorySlug}`);
-                await fetch(`/api/revalidate?path=/portfolios/${project.categorySlug}/${project.slug}`);
+                await fetch(buildRevalidateUrl('/portfolios'));
+                await fetch(buildRevalidateUrl(`/portfolios/${project.categorySlug}`));
+                await fetch(buildRevalidateUrl(`/portfolios/${project.categorySlug}/${projectToSave.slug}`));
             } else {
                 alert("Failed to publish: " + error.message);
             }
@@ -200,7 +204,7 @@ export default function PortfolioBuilderPage() {
                 clearForm();
                 alert("Deleted successfully!");
                 // Revalidate list pages
-                await fetch(`/api/revalidate?path=/portfolios`);
+                await fetch(buildRevalidateUrl('/portfolios'));
             } else { alert("Failed to delete: " + error.message); }
         } catch (e: any) { alert("Error deleting: " + e.message); }
         finally { setIsDeleting(false); }
@@ -278,9 +282,9 @@ export default function PortfolioBuilderPage() {
                 ));
 
                 // Force Next.js ISR cache rebuilds
-                await fetch(`/api/revalidate?path=/portfolios`);
-                await fetch(`/api/revalidate?path=/portfolios/${oldSlug}`); // Might not clear everything perfectly but helps
-                await fetch(`/api/revalidate?path=/portfolios/${newSlug}`);
+                await fetch(buildRevalidateUrl('/portfolios'));
+                await fetch(buildRevalidateUrl(`/portfolios/${oldSlug}`)); // Might not clear everything perfectly but helps
+                await fetch(buildRevalidateUrl(`/portfolios/${newSlug}`));
 
             } catch (e: any) {
                 alert("Failed to update projects: " + e.message);

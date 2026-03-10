@@ -5,6 +5,7 @@ import { ProjectCard } from "@/components/portfolio/ProjectCard";
 import { notFound } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { Project } from "@/constants/portfolios";
+import { decodeRouteParam } from "@/lib/route-params";
 
 const CATEGORY_NAMES: Record<string, string> = {
     'social-media': 'Social Media',
@@ -27,7 +28,8 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { categorySlug } = await params;
-    const categoryName = CATEGORY_NAMES[categorySlug] || categorySlug;
+    const resolvedCategorySlug = decodeRouteParam(categorySlug);
+    const categoryName = CATEGORY_NAMES[resolvedCategorySlug] || resolvedCategorySlug;
     const title = `${categoryName} Projects | TeamCreative`;
     const description = `Explore our ${categoryName.toLowerCase()} projects — creative work tailored to deliver results by TeamCreative.`;
 
@@ -48,11 +50,12 @@ export async function generateStaticParams() {
 
 export default async function CategoryPage({ params }: PageProps) {
     const { categorySlug } = await params;
+    const resolvedCategorySlug = decodeRouteParam(categorySlug);
 
     const { data: projectsData, error } = await supabase
         .from('projects')
         .select('*')
-        .eq('categorySlug', categorySlug);
+        .eq('categorySlug', resolvedCategorySlug);
 
     const categoryProjects = (projectsData || []) as Project[];
 
@@ -60,7 +63,7 @@ export default async function CategoryPage({ params }: PageProps) {
         notFound();
     }
 
-    const categoryTitle = categoryProjects[0]?.category || categorySlug;
+    const categoryTitle = categoryProjects[0]?.category || resolvedCategorySlug;
 
     return (
         <div className="min-h-screen bg-black text-white selection:bg-blue-500/30">
