@@ -2,6 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { MediaDisplay } from "./MediaDisplay";
+import { FramedMediaShell } from "./FramedMediaShell";
 import { motion } from "framer-motion";
 import { LocalizedText, getLocalizedContent, stripHtmlTags, toRichTextHtml } from "@/lib/content-helpers";
 import { useLanguage } from "@/lib/language-context";
@@ -21,7 +22,7 @@ export function ReelGridBlock({ items, mobileLayout = 'column' }: ReelGridBlockP
     return (
         <section className="container mx-auto px-4 py-12 md:py-24 max-w-7xl">
             <div className={cn(
-                "gap-6 md:gap-10",
+                "gap-4 md:gap-6",
                 mobileLayout === 'swipe'
                     ? "flex overflow-x-auto snap-x snap-mandatory pb-6 md:grid md:grid-cols-3 md:pb-0 -mx-4 px-4 md:mx-0 md:px-0"
                     : "grid grid-cols-1 md:grid-cols-3"
@@ -37,29 +38,30 @@ export function ReelGridBlock({ items, mobileLayout = 'column' }: ReelGridBlockP
                             viewport={{ once: true, margin: "-10%" }}
                             transition={{ delay: idx * 0.1, duration: 0.6 }}
                             className={cn(
-                                "relative aspect-[9/16] rounded-2xl overflow-hidden bg-neutral-900 border-[8px] border-neutral-900 shadow-2xl",
+                                "group relative aspect-[9/16]",
                                 mobileLayout === 'swipe' ? "min-w-[85vw] snap-center md:min-w-0" : ""
                             )}
                         >
-                            {/* Phone-like Frame Border Effect (Optional) */}
-                            <div className="absolute inset-0 pointer-events-none z-20 rounded-xl border border-white/10" />
-
-                            <MediaDisplay
-                                src={item.media}
-                                type={item.mediaType}
-                                className="w-full h-full scale-[1.01]" // Slight scale to avoid pixel gaps
-                                caption={stripHtmlTags(caption)}
-                                alt={stripHtmlTags(caption)}
-                            />
-
-                            {item.caption && (
-                                <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10">
-                                    <p
-                                        className="text-white font-bold text-lg leading-tight uppercase font-heading"
-                                        dangerouslySetInnerHTML={{ __html: toRichTextHtml(caption) }}
+                            <FramedMediaShell>
+                                <div className="relative h-full">
+                                    <MediaDisplay
+                                        src={item.media}
+                                        type={item.mediaType}
+                                        className="w-full h-full group-hover:scale-[1.02] transition-transform duration-700"
+                                        caption={stripHtmlTags(caption)}
+                                        alt={stripHtmlTags(caption)}
                                     />
+
+                                    {item.caption && (
+                                        <div className="absolute inset-x-0 bottom-0 p-5 bg-gradient-to-t from-black/80 via-black/40 to-transparent z-10">
+                                            <p
+                                                className="text-white font-bold text-base leading-tight uppercase font-heading"
+                                                dangerouslySetInnerHTML={{ __html: toRichTextHtml(caption) }}
+                                            />
+                                        </div>
+                                    )}
                                 </div>
-                            )}
+                            </FramedMediaShell>
                         </motion.div>
                     );
                 })}

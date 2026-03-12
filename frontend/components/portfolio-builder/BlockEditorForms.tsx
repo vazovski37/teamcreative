@@ -158,6 +158,7 @@ export function ReelGridForm({ block, onChange }: { block: BlockOfType<'reel-gri
 // ─── Media Grid Block ────────────────────────────────────────────
 export function MediaGridForm({ block, onChange }: { block: BlockOfType<'media-grid'>; onChange: (b: BlockOfType<'media-grid'>) => void }) {
     const items = block.items || [];
+    const layout = block.layout || 'grid';
 
     const updateItem = (idx: number, field: string, val: string) => {
         const newItems = [...items];
@@ -175,13 +176,26 @@ export function MediaGridForm({ block, onChange }: { block: BlockOfType<'media-g
 
     return (
         <BlockSection>
+            <SelectInput
+                label="Layout"
+                value={layout}
+                onChange={(v) => onChange({ ...block, layout: v as 'grid' | 'feature-right' | 'triptych' | 'banner' })}
+                options={[
+                    { value: 'grid', label: 'Classic Grid' },
+                    { value: 'feature-right', label: 'Feature Right (2 + 1)' },
+                    { value: 'triptych', label: 'Three Cards' },
+                    { value: 'banner', label: 'Wide Banner' },
+                ]}
+            />
             <div className="space-y-2">
                 <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Items</label>
                 {items.map((item, idx) => (
                     <DynamicItemWrapper key={idx} index={idx} onRemove={() => removeItem(idx)}>
                         <MediaUploadInput label="Media" value={item.media} onChange={(v) => updateItem(idx, 'media', v)} />
                         <SelectInput label="Media Type" value={item.mediaType} onChange={(v) => updateItem(idx, 'mediaType', v)} options={[{ value: 'image', label: 'Image' }, { value: 'video', label: 'Video' }]} />
-                        <SelectInput label="Size" value={item.size || 'sq'} onChange={(v) => updateItem(idx, 'size', v)} options={[{ value: 'sq', label: 'Square' }, { value: 'wide', label: 'Wide' }]} />
+                        {layout === 'grid' && (
+                            <SelectInput label="Size" value={item.size || 'sq'} onChange={(v) => updateItem(idx, 'size', v)} options={[{ value: 'sq', label: 'Square' }, { value: 'wide', label: 'Wide' }]} />
+                        )}
                     </DynamicItemWrapper>
                 ))}
                 <DynamicListControls onAdd={addItem} addLabel="Add Media Item" />

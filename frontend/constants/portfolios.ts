@@ -5,7 +5,11 @@ export type ContentBlock =
     | { type: 'text-highlight'; text: string | LocalizedText; label?: string | LocalizedText; align?: 'left' | 'center' }
     | { type: 'info-card'; media: string; mediaType: 'video' | 'image'; title?: string | LocalizedText; details?: { label: string | LocalizedText; value: string | LocalizedText }[]; theme?: 'paper' | 'dark' | 'glass'; align?: 'left' | 'right' }
     | { type: 'reel-grid'; mobileLayout?: 'swipe' | 'column'; items: { media: string; mediaType: 'video' | 'image'; caption?: string | LocalizedText }[] }
-    | { type: 'media-grid'; items: { media: string; mediaType: 'video' | 'image'; size?: 'sq' | 'wide' }[] }
+    | {
+        type: 'media-grid';
+        layout?: 'grid' | 'feature-right' | 'triptych' | 'banner';
+        items: { media: string; mediaType: 'video' | 'image'; size?: 'sq' | 'wide' }[];
+    }
     | { type: 'vertical-showcase'; media: string; mediaType: 'video' | 'image'; overlayText?: string | LocalizedText; title?: string | LocalizedText }
     | { type: 'results'; title: string | LocalizedText; description: string | LocalizedText; stats: { label: string | LocalizedText; value: string | LocalizedText }[] }
     | {
