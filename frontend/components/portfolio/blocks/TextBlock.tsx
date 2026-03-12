@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { LocalizedText, getLocalizedContent } from "@/lib/content-helpers";
+import { LocalizedText, getLocalizedContent, toRichTextHtml } from "@/lib/content-helpers";
 import { useLanguage } from "@/lib/language-context";
 
 interface TextBlockProps {
@@ -17,7 +17,7 @@ export function TextBlock({ text, label, align = 'center' }: TextBlockProps) {
     const localizedLabel = getLocalizedContent(label, language);
 
     return (
-        <section className="container mx-auto px-4 py-16 md:py-24 max-w-4xl">
+        <section className="container mx-auto px-4 !py-16 md:py-24 max-w-4xl">
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
                 whileInView={{ opacity: 1, y: 0 }}
@@ -30,14 +30,22 @@ export function TextBlock({ text, label, align = 'center' }: TextBlockProps) {
                 {localizedLabel && (
                     <div className="flex items-center gap-4 w-full justify-center">
                         <span className="h-px w-12 bg-white/20"></span>
-                        <span className="text-sm font-bold uppercase tracking-widest text-primary/80">{localizedLabel}</span>
+                        <span
+                            className="text-sm font-bold uppercase tracking-widest text-primary/80"
+                            dangerouslySetInnerHTML={{ __html: toRichTextHtml(localizedLabel) }}
+                        />
                         <span className="h-px w-12 bg-white/20"></span>
                     </div>
                 )}
 
-                <p className="text-xl md:text-2xl lg:text-3xl text-gray-200 leading-relaxed font-light">
-                    {localizedText}
-                </p>
+                <div
+                    className={cn(
+                        "text-xl md:text-2xl lg:text-3xl text-gray-200 leading-relaxed font-light",
+                        "prose prose-invert prose-p:my-3 prose-strong:text-white prose-em:text-gray-100 prose-headings:text-white prose-a:text-blue-400",
+                        "max-w-none text-balance"
+                    )}
+                    dangerouslySetInnerHTML={{ __html: toRichTextHtml(localizedText) }}
+                />
             </motion.div>
         </section>
     );

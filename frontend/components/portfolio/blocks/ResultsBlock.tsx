@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 import { motion } from "framer-motion";
-import { LocalizedText, getLocalizedContent } from "@/lib/content-helpers";
+import { LocalizedText, getLocalizedContent, toRichTextHtml } from "@/lib/content-helpers";
 import { useLanguage } from "@/lib/language-context";
 
 interface ResultsBlockProps {
@@ -28,12 +28,14 @@ export function ResultsBlock({ title, description, stats }: ResultsBlockProps) {
                         transition={{ duration: 0.6 }}
                     >
                         <h4 className="text-primary font-bold uppercase tracking-widest mb-4 text-sm">Impact & Numbers</h4>
-                        <h3 className="text-4xl md:text-5xl font-bold mb-8 font-heading uppercase text-white">
-                            {localizedTitle}
-                        </h3>
-                        <p className="text-xl text-gray-300 leading-relaxed mb-8">
-                            {localizedDesc}
-                        </p>
+                        <h3
+                            className="text-4xl md:text-5xl font-bold mb-8 font-heading uppercase text-white"
+                            dangerouslySetInnerHTML={{ __html: toRichTextHtml(localizedTitle) }}
+                        />
+                        <div
+                            className="text-xl text-gray-300 leading-relaxed mb-8 prose prose-invert prose-p:my-0 prose-headings:my-2 prose-a:text-blue-400 prose-headings:font-heading prose-p:font-sans max-w-none"
+                            dangerouslySetInnerHTML={{ __html: toRichTextHtml(localizedDesc as string) }}
+                        />
                     </motion.div>
 
                     <motion.div
@@ -44,8 +46,14 @@ export function ResultsBlock({ title, description, stats }: ResultsBlockProps) {
                     >
                         {stats.map((stat, idx) => (
                             <div key={idx} className="bg-black/30 p-8 rounded-2xl border border-white/5 backdrop-blur-sm hover:border-primary/30 transition-colors">
-                                <div className="text-4xl lg:text-5xl font-black text-white mb-2">{getLocalizedContent(stat.value, language)}</div>
-                                <div className="text-sm font-bold text-gray-400 uppercase tracking-wider">{getLocalizedContent(stat.label, language)}</div>
+                                <div
+                                    className="text-4xl lg:text-5xl font-black text-white mb-2"
+                                    dangerouslySetInnerHTML={{ __html: toRichTextHtml(getLocalizedContent(stat.value, language)) }}
+                                />
+                                <div
+                                    className="text-sm font-bold text-gray-400 uppercase tracking-wider"
+                                    dangerouslySetInnerHTML={{ __html: toRichTextHtml(getLocalizedContent(stat.label, language)) }}
+                                />
                             </div>
                         ))}
                     </motion.div>

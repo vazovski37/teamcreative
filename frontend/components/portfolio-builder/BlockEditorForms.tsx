@@ -66,7 +66,7 @@ export function HeroBlockForm({ block, onChange }: { block: BlockOfType<'hero'>;
 export function TextHighlightForm({ block, onChange }: { block: BlockOfType<'text-highlight'>; onChange: (b: BlockOfType<'text-highlight'>) => void }) {
     return (
         <BlockSection>
-            <LocalizedInput label="Text" value={block.text} onChange={(v) => onChange({ ...block, text: v as string | LocalizedText })} variant="textarea" required />
+            <LocalizedInput variant="textarea" label="Text" value={block.text} onChange={(v) => onChange({ ...block, text: v as string | LocalizedText })} required />
             <LocalizedInput label="Label" value={block.label || ''} onChange={(v) => onChange({ ...block, label: v as string | LocalizedText })} />
             <SelectInput label="Align" value={block.align || 'center'} onChange={(v) => onChange({ ...block, align: v as 'left' | 'center' })} options={[{ value: 'center', label: 'Center' }, { value: 'left', label: 'Left' }]} />
         </BlockSection>
@@ -223,7 +223,7 @@ export function ResultsForm({ block, onChange }: { block: BlockOfType<'results'>
     return (
         <BlockSection>
             <LocalizedInput label="Title" value={block.title} onChange={(v) => onChange({ ...block, title: v as string | LocalizedText })} required />
-            <LocalizedInput label="Description" value={block.description} onChange={(v) => onChange({ ...block, description: v as string | LocalizedText })} variant="textarea" required />
+            <LocalizedInput variant="textarea" label="Description" value={block.description} onChange={(v) => onChange({ ...block, description: v as string | LocalizedText })} required />
 
             <div className="space-y-2">
                 <label className="text-xs font-medium text-gray-400 uppercase tracking-wider">Stats</label>
@@ -247,13 +247,13 @@ export function LegacyColumnsForm({ block, onChange }: { block: BlockOfType<'leg
                 <span className="text-[10px] font-medium text-gray-600 uppercase">Left Column</span>
                 <LocalizedInput label="Label" value={block.left.label || ''} onChange={(v) => onChange({ ...block, left: { ...block.left, label: v as string | LocalizedText } })} />
                 <LocalizedInput label="Title" value={block.left.title} onChange={(v) => onChange({ ...block, left: { ...block.left, title: v as string | LocalizedText } })} required />
-                <LocalizedInput label="Text" value={block.left.text} onChange={(v) => onChange({ ...block, left: { ...block.left, text: v as string | LocalizedText } })} variant="textarea" required />
+                <LocalizedInput variant="textarea" label="Text" value={block.left.text} onChange={(v) => onChange({ ...block, left: { ...block.left, text: v as string | LocalizedText } })} required />
             </div>
             <div className="space-y-3 p-3 rounded-lg border border-white/5 bg-white/[0.02]">
                 <span className="text-[10px] font-medium text-gray-600 uppercase">Right Column</span>
                 <LocalizedInput label="Label" value={block.right.label || ''} onChange={(v) => onChange({ ...block, right: { ...block.right, label: v as string | LocalizedText } })} />
                 <LocalizedInput label="Title" value={block.right.title} onChange={(v) => onChange({ ...block, right: { ...block.right, title: v as string | LocalizedText } })} required />
-                <LocalizedInput label="Text" value={block.right.text} onChange={(v) => onChange({ ...block, right: { ...block.right, text: v as string | LocalizedText } })} variant="textarea" required />
+                <LocalizedInput variant="textarea" label="Text" value={block.right.text} onChange={(v) => onChange({ ...block, right: { ...block.right, text: v as string | LocalizedText } })} required />
             </div>
         </BlockSection>
     );

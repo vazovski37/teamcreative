@@ -54,6 +54,7 @@ export default function Navbar() {
     const navRefs = useRef<(HTMLAnchorElement | null)[]>([])
 
     useEffect(() => {
+        // eslint-disable-next-line react-hooks/exhaustive-deps
         setIsMounted(true)
     }, [])
 

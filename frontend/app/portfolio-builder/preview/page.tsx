@@ -12,7 +12,6 @@ import { MediaGridBlock } from "@/components/portfolio/blocks/MediaGridBlock";
 import { VerticalShowcaseBlock } from "@/components/portfolio/blocks/VerticalShowcaseBlock";
 import { ResultsBlock } from "@/components/portfolio/blocks/ResultsBlock";
 import { LegacyColumnsBlock } from "@/components/portfolio/blocks/LegacyColumnsBlock";
-import { BentoGridBlock } from "@/components/portfolio/blocks/BentoGridBlock";
 import { ResultsCTA } from "@/components/portfolio/ResultsCTA";
 
 export default function PreviewPage() {
@@ -22,8 +21,9 @@ export default function PreviewPage() {
         const draft = localStorage.getItem('portfolio-builder-draft');
         if (draft) {
             try {
+                // eslint-disable-next-line react-hooks/exhaustive-deps
                 setProject(JSON.parse(draft));
-            } catch (e) {
+            } catch (error) {
                 console.error("Failed to parse draft");
             }
         }
@@ -49,7 +49,6 @@ export default function PreviewPage() {
                         case 'reel-grid': return <ReelGridBlock key={idx} {...block} />;
                         case 'media-grid': return <MediaGridBlock key={idx} {...block} />;
                         case 'vertical-showcase': return <VerticalShowcaseBlock key={idx} {...block} />;
-                        case 'bento-grid': return <BentoGridBlock key={idx} {...block} />;
                         case 'results': return <ResultsBlock key={idx} {...block} />;
                         default: return null;
                     }

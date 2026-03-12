@@ -1,17 +1,94 @@
 import type { Metadata } from "next";
-import { Fira_Sans } from "next/font/google";
 import localFont from "next/font/local";
 import "./globals.css";
 
-const firaSans = Fira_Sans({
+const firaSans = localFont({
+  src: [
+    {
+      path: './../public/fonts/FiraGO/FiraGO-Regular.otf',
+      weight: '400',
+      style: 'normal',
+    },
+    {
+      path: './../public/fonts/FiraGO/FiraGO-Medium.otf',
+      weight: '500',
+      style: 'normal',
+    },
+    {
+      path: './../public/fonts/FiraGO/FiraGO-SemiBold.otf',
+      weight: '600',
+      style: 'normal',
+    },
+    {
+      path: './../public/fonts/FiraGO/FiraGO-Bold.otf',
+      weight: '700',
+      style: 'normal',
+    },
+    {
+      path: './../public/fonts/FiraGO/FiraGO-Italic.otf',
+      weight: '400',
+      style: 'italic',
+    },
+    {
+      path: './../public/fonts/FiraGO/FiraGO-MediumItalic.otf',
+      weight: '500',
+      style: 'italic',
+    },
+    {
+      path: './../public/fonts/FiraGO/FiraGO-SemiBoldItalic.otf',
+      weight: '600',
+      style: 'italic',
+    },
+    {
+      path: './../public/fonts/FiraGO/FiraGO-BoldItalic.otf',
+      weight: '700',
+      style: 'italic',
+    },
+  ],
   variable: "--font-firago",
-  subsets: ["latin", "cyrillic"],
-  weight: ["400", "500", "600"],
+  display: "swap"
 });
 
 const msBlock = localFont({
   src: "./fonts/MSBlock.otf",
   variable: "--font-ms-block",
+  display: "swap",
+});
+
+const roman = localFont({
+  src: [
+    {
+      path: "./../public/fonts/FiraGO/FiraGO-Book.otf",
+      weight: "400",
+      style: "normal",
+    },
+    {
+      path: "./../public/fonts/FiraGO/FiraGO-BookItalic.otf",
+      weight: "400",
+      style: "italic",
+    },
+    {
+      path: "./../public/fonts/FiraGO/FiraGO-Two.otf",
+      weight: "500",
+      style: "normal",
+    },
+    {
+      path: "./../public/fonts/FiraGO/FiraGO-TwoItalic.otf",
+      weight: "500",
+      style: "italic",
+    },
+    {
+      path: "./../public/fonts/FiraGO/FiraGO-Eight.otf",
+      weight: "700",
+      style: "normal",
+    },
+    {
+      path: "./../public/fonts/FiraGO/FiraGO-EightItalic.otf",
+      weight: "700",
+      style: "italic",
+    },
+  ],
+  variable: "--font-roman",
   display: "swap",
 });
 
@@ -36,7 +113,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${firaSans.variable} ${msBlock.variable} antialiased bg-background text-foreground`}
+        className={`${firaSans.variable} ${msBlock.variable} ${roman.variable} antialiased bg-background text-foreground`}
       >
         <ThemeProvider
           attribute="class"

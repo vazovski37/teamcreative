@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { MediaDisplay } from "./MediaDisplay";
 import { motion } from "framer-motion";
-import { LocalizedText, getLocalizedContent } from "@/lib/content-helpers";
+import { LocalizedText, getLocalizedContent, stripHtmlTags, toRichTextHtml } from "@/lib/content-helpers";
 import { useLanguage } from "@/lib/language-context";
 
 interface InfoCardBlockProps {
@@ -35,8 +35,8 @@ export function InfoCardBlock({
                         src={media}
                         type={mediaType}
                         className="w-full h-full"
-                        caption={localizedTitle}
-                        alt={localizedTitle || "Info Card Media"}
+                        caption={stripHtmlTags(localizedTitle)}
+                        alt={stripHtmlTags(localizedTitle) || "Info Card Media"}
                     />
 
                     {/* Overlay Card */}
@@ -67,9 +67,9 @@ export function InfoCardBlock({
                                 <h3 className={cn(
                                     "text-3xl md:text-4xl font-black mb-8 uppercase leading-none font-heading",
                                     activeTheme === 'white' ? "text-red-600" : "text-primary"
-                                )}>
-                                    {localizedTitle}
-                                </h3>
+                                )}
+                                    dangerouslySetInnerHTML={{ __html: toRichTextHtml(localizedTitle) }}
+                                />
                             )}
 
                             {details && (
@@ -79,15 +79,15 @@ export function InfoCardBlock({
                                             <span className={cn(
                                                 "text-xs font-bold uppercase tracking-widest",
                                                 activeTheme === 'white' ? "text-neutral-500" : "text-white/60"
-                                            )}>
-                                                {getLocalizedContent(item.label, language)}
-                                            </span>
+                                            )}
+                                                dangerouslySetInnerHTML={{ __html: toRichTextHtml(getLocalizedContent(item.label, language)) }}
+                                            />
                                             <span className={cn(
                                                 "text-lg font-medium leading-tight",
                                                 activeTheme === 'white' ? "text-neutral-900" : "text-white"
-                                            )}>
-                                                {getLocalizedContent(item.value, language)}
-                                            </span>
+                                            )}
+                                                dangerouslySetInnerHTML={{ __html: toRichTextHtml(getLocalizedContent(item.value, language)) }}
+                                            />
                                         </li>
                                     ))}
                                 </ul>

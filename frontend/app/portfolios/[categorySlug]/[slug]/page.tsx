@@ -12,7 +12,6 @@ import { MediaGridBlock } from "@/components/portfolio/blocks/MediaGridBlock";
 import { VerticalShowcaseBlock } from "@/components/portfolio/blocks/VerticalShowcaseBlock";
 import { ResultsBlock } from "@/components/portfolio/blocks/ResultsBlock";
 import { LegacyColumnsBlock } from "@/components/portfolio/blocks/LegacyColumnsBlock";
-import { BentoGridBlock } from "@/components/portfolio/blocks/BentoGridBlock";
 import { ResultsCTA } from "@/components/portfolio/ResultsCTA";
 import { decodeRouteParam } from "@/lib/route-params";
 
@@ -74,7 +73,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export async function generateStaticParams() {
     const { data: projectsData } = await supabase.from('projects').select('categorySlug, slug');
     const projects = projectsData || [];
-    return projects.map((p: any) => ({
+    return projects.map((p: {categorySlug: string; slug: string}) => ({
         categorySlug: p.categorySlug,
         slug: p.slug,
     }));
@@ -118,8 +117,6 @@ export default async function ProjectPage({ params }: PageProps) {
                             return <MediaGridBlock key={idx} {...block} />;
                         case 'vertical-showcase':
                             return <VerticalShowcaseBlock key={idx} {...block} />;
-                        case 'bento-grid':
-                            return <BentoGridBlock key={idx} {...block} />;
                         case 'results':
                             return <ResultsBlock key={idx} {...block} />;
                         default:

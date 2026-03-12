@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { MediaDisplay } from "./MediaDisplay";
 import { motion } from "framer-motion";
-import { LocalizedText, getLocalizedContent } from "@/lib/content-helpers";
+import { LocalizedText, getLocalizedContent, stripHtmlTags, toRichTextHtml } from "@/lib/content-helpers";
 import { useLanguage } from "@/lib/language-context";
 
 interface HeroBlockProps {
@@ -15,7 +15,7 @@ interface HeroBlockProps {
     align?: 'left' | 'center';
 }
 
-export function HeroBlock({ media, mediaType, title, subtitle, badge, align = 'center' }: HeroBlockProps) {
+export function HeroBlock({ media, mediaType = 'image', title, subtitle, badge, align = 'center' }: HeroBlockProps) {
     const { language } = useLanguage();
     const localizedTitle = getLocalizedContent(title, language);
     const localizedSubtitle = getLocalizedContent(subtitle, language);
@@ -30,8 +30,8 @@ export function HeroBlock({ media, mediaType, title, subtitle, badge, align = 'c
                         src={media}
                         type={mediaType}
                         className="opacity-70"
-                        caption={localizedTitle}
-                        alt={localizedTitle || "Hero Media"}
+                        caption={stripHtmlTags(localizedTitle)}
+                        alt={stripHtmlTags(localizedTitle) || "Hero Media"}
                     />
                     <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent" />
                 </div>
@@ -50,9 +50,10 @@ export function HeroBlock({ media, mediaType, title, subtitle, badge, align = 'c
                         transition={{ delay: 0.1 }}
                         className="mb-8"
                     >
-                        <span className="inline-block px-8 py-3 rounded-full border border-white/20 bg-white/5 backdrop-blur-md text-white text-sm md:text-base font-bold uppercase tracking-widest shadow-lg">
-                            {localizedBadge}
-                        </span>
+                        <span
+                            className="inline-block px-8 py-3 rounded-full border border-white/20 bg-white/5 backdrop-blur-md text-white text-sm md:text-base font-bold uppercase tracking-widest shadow-lg"
+                            dangerouslySetInnerHTML={{ __html: toRichTextHtml(localizedBadge) }}
+                        />
                     </motion.div>
                 )}
 
@@ -62,9 +63,8 @@ export function HeroBlock({ media, mediaType, title, subtitle, badge, align = 'c
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
                         className="text-primary tracking-wider uppercase text-sm md:text-base font-bold mb-4"
-                    >
-                        {localizedSubtitle}
-                    </motion.h2>
+                        dangerouslySetInnerHTML={{ __html: toRichTextHtml(localizedSubtitle) }}
+                    />
                 )}
                 {localizedTitle && (
                     <motion.h1
@@ -72,9 +72,8 @@ export function HeroBlock({ media, mediaType, title, subtitle, badge, align = 'c
                         whileInView={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.3 }}
                         className="text-5xl md:text-7xl lg:text-8xl font-black uppercase tracking-tight mb-8 drop-shadow-2xl font-heading text-white"
-                    >
-                        {localizedTitle}
-                    </motion.h1>
+                        dangerouslySetInnerHTML={{ __html: toRichTextHtml(localizedTitle) }}
+                    />
                 )}
             </div>
         </section>

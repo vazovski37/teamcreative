@@ -48,9 +48,9 @@ export function MediaUploadInput({ label, value, onChange, placeholder, required
             setFileName(file.name);
             onChange(publicUrlData.publicUrl);
 
-        } catch (err: any) {
+        } catch (err: unknown) {
             console.error(err);
-            alert('Upload error: ' + err.message);
+            alert('Upload error: ' + (err as Error).message);
         } finally {
             setIsUploading(false);
             if (fileInputRef.current) {

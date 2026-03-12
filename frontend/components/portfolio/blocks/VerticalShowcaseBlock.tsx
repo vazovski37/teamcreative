@@ -3,7 +3,7 @@
 import { cn } from "@/lib/utils";
 import { MediaDisplay } from "./MediaDisplay";
 import { motion } from "framer-motion";
-import { LocalizedText, getLocalizedContent } from "@/lib/content-helpers";
+import { LocalizedText, getLocalizedContent, stripHtmlTags, toRichTextHtml } from "@/lib/content-helpers";
 import { useLanguage } from "@/lib/language-context";
 
 interface VerticalShowcaseBlockProps {
@@ -31,8 +31,8 @@ export function VerticalShowcaseBlock({ media, mediaType, overlayText, title }: 
                         src={media}
                         type={mediaType}
                         className="w-full h-full"
-                        caption={localizedTitle}
-                        alt={localizedTitle || "Showcase Media"}
+                        caption={stripHtmlTags(localizedTitle)}
+                        alt={stripHtmlTags(localizedTitle) || "Showcase Media"}
                     />
 
                     {/* Overlay Gradient & Text */}
@@ -40,14 +40,16 @@ export function VerticalShowcaseBlock({ media, mediaType, overlayText, title }: 
 
                     <div className="absolute bottom-10 left-8 right-8 text-center">
                         {localizedTitle && (
-                            <h3 className="text-3xl font-black uppercase tracking-tight text-white mb-4 font-heading drop-shadow-lg">
-                                {localizedTitle}
-                            </h3>
+                            <h3
+                                className="text-3xl font-black uppercase tracking-tight text-white mb-4 font-heading drop-shadow-lg"
+                                dangerouslySetInnerHTML={{ __html: toRichTextHtml(localizedTitle) }}
+                            />
                         )}
                         {localizedOverlay && (
-                            <p className="text-white/90 text-sm font-medium tracking-wide leading-relaxed">
-                                {localizedOverlay}
-                            </p>
+                            <p
+                                className="text-white/90 text-sm font-medium tracking-wide leading-relaxed"
+                                dangerouslySetInnerHTML={{ __html: toRichTextHtml(localizedOverlay) }}
+                            />
                         )}
                     </div>
                 </motion.div>

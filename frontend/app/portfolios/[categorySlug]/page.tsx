@@ -44,8 +44,8 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 export async function generateStaticParams() {
     const { data: projectsData } = await supabase.from('projects').select('categorySlug');
     const projects = projectsData || [];
-    const slugs = [...new Set(projects.map((p: any) => p.categorySlug).filter(Boolean))];
-    return slugs.map((categorySlug: any) => ({ categorySlug }));
+    const slugs = [...new Set(projects.map((p: {categorySlug: string}) => p.categorySlug).filter(Boolean))];
+    return slugs.map((categorySlug: string) => ({ categorySlug }));
 }
 
 export default async function CategoryPage({ params }: PageProps) {

@@ -12,8 +12,7 @@ export type ContentBlock =
         type: 'legacy-columns';
         left: { title: string | LocalizedText; text: string | LocalizedText; label?: string | LocalizedText };
         right: { title: string | LocalizedText; text: string | LocalizedText; label?: string | LocalizedText };
-    }
-    | { type: 'bento-grid'; items: { media: string; mediaType: 'video' | 'image'; caption?: string | LocalizedText; span?: 'small' | 'large' }[] };
+    };
 
 export interface Project {
     id: string;

@@ -21,12 +21,11 @@ const BLOCK_TYPES: { type: ContentBlock['type']; label: string; color: string; i
     { type: 'vertical-showcase', label: 'Vertical Showcase', color: 'bg-cyan-500', icon: '📱' },
     { type: 'results', label: 'Results', color: 'bg-green-500', icon: '📊' },
     { type: 'legacy-columns', label: 'Legacy Columns', color: 'bg-orange-500', icon: '📰' },
-    { type: 'bento-grid', label: 'Bento Grid', color: 'bg-indigo-500', icon: '🍱' },
 ];
 
 function createDefaultBlock(type: ContentBlock['type']): ContentBlock {
     switch (type) {
-        case 'hero': return { type: 'hero' };
+        case 'hero': return { type: 'hero', mediaType: 'image' };
         case 'text-highlight': return { type: 'text-highlight', text: '' };
         case 'info-card': return { type: 'info-card', media: '', mediaType: 'image', details: [] };
         case 'reel-grid': return { type: 'reel-grid', items: [] };
@@ -34,7 +33,6 @@ function createDefaultBlock(type: ContentBlock['type']): ContentBlock {
         case 'vertical-showcase': return { type: 'vertical-showcase', media: '', mediaType: 'image' };
         case 'results': return { type: 'results', title: '', description: '', stats: [] };
         case 'legacy-columns': return { type: 'legacy-columns', left: { title: '', text: '' }, right: { title: '', text: '' } };
-        case 'bento-grid': return { type: 'bento-grid', items: [] };
         default: throw new Error("Unknown block type");
     }
 }
@@ -52,8 +50,18 @@ export default function PortfolioBuilderPage() {
     const [editingCategorySlug, setEditingCategorySlug] = useState<string | null>(null);
     const [newCategoryName, setNewCategoryName] = useState('');
 
-    useEffect(() => {
-        // Fetch existing projects from Supabase to populate the dropdown and categories list
+    // ─── Project metadata state ──────────────────────────────────
+    const [id, setId] = useState<string | null>(null);
+    const [slug, setSlug] = useState('');
+    const [categorySlug, setCategorySlug] = useState('');
+    const [client, setClient] = useState('');
+    const [title, setTitle] = useState('');
+    const [description, setDescription] = useState('');
+    const [coverImage, setCoverImage] = useState('');
+    const [strategy, setStrategy] = useState('');
+    const [results, setResults] = useState('');
+
+    useEffect(() => {        // Fetch existing projects from Supabase to populate the dropdown and categories list
         const fetchProjects = async () => {
             const { data } = await supabase.from('projects').select('*');
             if (data) {
@@ -78,18 +86,7 @@ export default function PortfolioBuilderPage() {
             }
         };
         fetchProjects();
-    }, []);
-
-    // ─── Project metadata state ──────────────────────────────────
-    const [id, setId] = useState<string | null>(null);
-    const [slug, setSlug] = useState('');
-    const [categorySlug, setCategorySlug] = useState('');
-    const [client, setClient] = useState('');
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [coverImage, setCoverImage] = useState('');
-    const [strategy, setStrategy] = useState('');
-    const [results, setResults] = useState('');
+    }, [categorySlug]);
 
     // ─── SEO metadata state ──────────────────────────────────────
     const [metaTitle, setMetaTitle] = useState('');
@@ -185,7 +182,7 @@ export default function PortfolioBuilderPage() {
             } else {
                 alert("Failed to publish: " + error.message);
             }
-        } catch (e: any) { alert("Error saving: " + e.message); }
+        } catch (e: unknown) { alert("Error saving: " + (e as Error).message); }
         finally { setIsSaving(false); }
     };
 
@@ -206,7 +203,7 @@ export default function PortfolioBuilderPage() {
                 // Revalidate list pages
                 await fetch(buildRevalidateUrl('/portfolios'));
             } else { alert("Failed to delete: " + error.message); }
-        } catch (e: any) { alert("Error deleting: " + e.message); }
+        } catch (e: unknown) { alert("Error deleting: " + (e as Error).message); }
         finally { setIsDeleting(false); }
     };
 
@@ -286,8 +283,8 @@ export default function PortfolioBuilderPage() {
                 await fetch(buildRevalidateUrl(`/portfolios/${oldSlug}`)); // Might not clear everything perfectly but helps
                 await fetch(buildRevalidateUrl(`/portfolios/${newSlug}`));
 
-            } catch (e: any) {
-                alert("Failed to update projects: " + e.message);
+            } catch (e: unknown) {
+                alert("Failed to update projects: " + (e as Error).message);
                 setIsSaving(false);
                 setEditingCategorySlug(null);
                 return;
